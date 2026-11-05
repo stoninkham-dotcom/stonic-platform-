@@ -1,95 +1,99 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>STONIC Website Studio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <title>STONIC | Website Builder</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="app.js"></script>
 </head>
 <body>
 
-<header>
-  <a class="logo" href="#">◈ STONIC</a>
-  <span>WEBSITE STUDIO</span>
-  <button id="newProject" class="light">＋ New project</button>
+<header class="topbar">
+  <div class="brand">◇ STONIC</div>
+  <button id="newProject" type="button">＋ New project</button>
 </header>
 
-<main>
-  <section class="hero">
-    <small>CREATE WITHOUT LIMITS</small>
-    <h1>Build a website<br><em>that feels like you.</em></h1>
-    <p>Describe your business and create a polished, responsive website concept.</p>
+<main class="container">
+
+  <section class="panel">
+    <h2>01 · Create your website</h2>
+
+    <label for="projectName">Project name</label>
+    <input id="projectName" type="text" placeholder="e.g. Bright Smile Dental">
+
+    <label for="businessType">Business type</label>
+    <select id="businessType">
+      <option value="Dental Clinic">Dental Clinic</option>
+      <option value="Restaurant">Restaurant</option>
+      <option value="Real Estate">Real Estate</option>
+      <option value="E-commerce">E-commerce</option>
+      <option value="Agency">Agency</option>
+      <option value="Other Business">Other Business</option>
+    </select>
+
+    <label for="brandColor">Brand color</label>
+    <input id="brandColor" type="color" value="#1764ed">
+
+    <label for="websitePrompt">Describe your website</label>
+    <textarea id="websitePrompt" rows="5" placeholder="Describe your business, services, style and required sections...">A modern dental clinic website with services, team, patient reviews, appointment request form and WhatsApp contact.</textarea>
+
+    <p class="hint">Mention your services, location, style and required sections.</p>
+
+    <button id="generate" class="primary-btn" type="button">
+      Create website concept →
+    </button>
+
+    <p id="status" class="hint" aria-live="polite">Ready to create your website.</p>
   </section>
 
-  <section class="grid">
-    <article class="card">
-      <h2>01 · Your project</h2>
+  <section class="panel">
+    <h2>02 · Workspace</h2>
 
-      <label>Project name</label>
-      <input id="projectName" value="Bright Smile Dental">
+    <div class="actions">
+      <button id="saveProject" type="button">Save project</button>
+      <button id="exportProject" type="button">Export HTML</button>
+    </div>
 
-      <label>Business type</label>
-      <input id="businessType" value="Dental clinic">
-
-      <label>Brand colour</label>
-      <input id="brandColor" type="color" value="#0b5cff">
-
-      <label>Describe your website</label>
-      <textarea id="websitePrompt" rows="6">A modern dental clinic website with services, team, patient reviews, appointment request form and WhatsApp contact.</textarea>
-
-      <p class="hint">Mention your services, location, style and required sections.</p>
-
-      <button id="generate" class="primary">Create website concept →</button>
-      <p id="status" class="hint">Your project is saved in this browser when you press Save project.</p>
-    </article>
-
-    <article class="card">
-      <h2>02 · Workspace</h2>
-
-      <div class="actions">
-        <button id="saveProject" class="secondary">Save project</button>
-        <button id="exportProject" class="secondary">Export HTML</button>
+    <div class="workspace">
+      <div class="workspace-head">
+        <span>● ● ●</span>
+        <span id="workspaceStatus">NOT GENERATED</span>
       </div>
 
-      <div class="canvas">
-        <div class="bar">
-          ● ● ● <span id="canvasState">NOT GENERATED</span>
-        </div>
-
-        <div class="canvasbody">
-          <b>✦</b>
-          <h3 id="canvasTitle">Your website starts here</h3>
-          <p id="canvasDescription">Add your business details and create a website concept.</p>
-        </div>
+      <div id="canvasState" class="canvas">
+        <div class="sparkle">✦</div>
+        <h2 id="canvasTitle">Your website starts here</h2>
+        <p id="canvasDescription">
+          Add your business details and create a website concept.
+        </p>
       </div>
+    </div>
 
-      <button id="previewWebsite" class="dark" disabled>
-        Preview website in new tab ↗
-      </button>
+    <button id="previewWebsite" class="preview-btn" type="button" disabled>
+      Preview website in new tab ↗
+    </button>
 
-      <p class="hint">The complete website opens separately from the builder.</p>
-    </article>
+    <p class="hint">The complete website opens separately from the builder.</p>
   </section>
 
-  <section class="grid lower">
-    <article class="card">
-      <h2>03 · Project history</h2>
-      <div id="projectList">Your saved projects will appear here.</div>
-    </article>
-
-    <article class="card darkcard">
-      <h2>Made for what’s next</h2>
-      <p>Chatbot integration, client workspaces and publishing tools can be connected as STONIC grows.</p>
-      <small>FUTURE-READY FOUNDATION</small>
-    </article>
+  <section class="panel">
+    <h2>03 · Project history</h2>
+    <div id="projectList">
+      Your saved projects will appear here.
+    </div>
   </section>
 
-  <footer>
-    © 2026 STONIC Studio
-    <span>Build · Preview · Deliver</span>
-  </footer>
 </main>
 
+<footer>
+  <p>STONIC Website Builder</p>
+</footer>
+
+<!-- Keep app.js at the bottom so all page elements load first -->
+<script src="app.js"></script>
+
 </body>
-          </html>
+      </html>
+  
