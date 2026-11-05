@@ -1,1 +1,95 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STONIC | Website Builder</title><link rel="stylesheet" href="style.css"></head><body><aside><h2>◆ STONIC</h2><small>WORKSPACE</small><button class="nav active" data-tab="builder">▦ Website Builder</button><button class="nav" data-tab="projects">▤ Projects & History</button><button class="nav" data-tab="chatbot">◉ Chatbot Builder <small>Coming soon</small></button><p class="sidefoot">● Builder workspace</p></aside><main><header><div><small>STONIC PLATFORM</small><h1 id="heading">Website Builder</h1></div><button id="new" class="primary">＋ New project</button></header><section id="builder" class="tab"><div class="hero"><small>CREATE A WEBSITE</small><h2>Turn your idea into a website.</h2><p>Describe the business and the website you need. Save projects, preview designs and keep an edit history.</p></div><div class="cols"><article class="panel"><h3>Website instructions</h3><p class="muted">Start with a business brief or request an edit.</p><label>Project name</label><input id="name" placeholder="e.g. Bright Smile Dental"><label>Business type</label><input id="type" placeholder="e.g. Dental clinic, agency"><label>What should the website look like?</label><textarea id="prompt" rows="7" placeholder="Create a modern business website with services, about section, testimonials and a contact form..."></textarea><p class="muted">Mention pages, colours, sections, audience and desired actions.</p><button class="primary" id="preview">Create website preview ↗</button> <button id="save">Save project</button><p id="status" class="muted">Foundation version: preview and local saving are available. AI and publishing will be connected later.</p></article><article class="panel"><h3>Live preview</h3><div class="browser"><div class="bar">● ● ●　 your-website.stonic</div><div class="site"><b id="brand">YOUR BRAND</b><div class="hero2"><small>WELCOME TO YOUR BUSINESS</small><h1 id="title">Your website starts here.</h1><p id="copy">Describe your website to see a concept here.</p><button class="primary">Get started</button></div><div class="cards"><span>01　About</span><span>02　Services</span><span>03　Contact</span></div><small>A website concept by STONIC</small></div></div><button id="export">Export preview HTML</button><p class="muted" id="saved">No project saved yet</p></article></div></section><section id="projects" class="tab hide"><h2>Your projects</h2><p class="muted">Saved projects and edit history on this browser.</p><div id="list"></div></section><section id="chatbot" class="tab hide"><article class="panel center"><h2>Chatbot Builder is next</h2><p>Client-specific FAQs, lead collection, appointments, workflows and website embedding.</p><small>PLANNED MODULE</small></article></section><footer>STONIC Platform · Mobile-first foundation</footer></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>STONIC Website Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">◈ STONIC</a>
+  <span>WEBSITE STUDIO</span>
+  <button id="newProject" class="light">＋ New project</button>
+</header>
+
+<main>
+  <section class="hero">
+    <small>CREATE WITHOUT LIMITS</small>
+    <h1>Build a website<br><em>that feels like you.</em></h1>
+    <p>Describe your business and create a polished, responsive website concept.</p>
+  </section>
+
+  <section class="grid">
+    <article class="card">
+      <h2>01 · Your project</h2>
+
+      <label>Project name</label>
+      <input id="projectName" value="Bright Smile Dental">
+
+      <label>Business type</label>
+      <input id="businessType" value="Dental clinic">
+
+      <label>Brand colour</label>
+      <input id="brandColor" type="color" value="#0b5cff">
+
+      <label>Describe your website</label>
+      <textarea id="websitePrompt" rows="6">A modern dental clinic website with services, team, patient reviews, appointment request form and WhatsApp contact.</textarea>
+
+      <p class="hint">Mention your services, location, style and required sections.</p>
+
+      <button id="generate" class="primary">Create website concept →</button>
+      <p id="status" class="hint">Your project is saved in this browser when you press Save project.</p>
+    </article>
+
+    <article class="card">
+      <h2>02 · Workspace</h2>
+
+      <div class="actions">
+        <button id="saveProject" class="secondary">Save project</button>
+        <button id="exportProject" class="secondary">Export HTML</button>
+      </div>
+
+      <div class="canvas">
+        <div class="bar">
+          ● ● ● <span id="canvasState">NOT GENERATED</span>
+        </div>
+
+        <div class="canvasbody">
+          <b>✦</b>
+          <h3 id="canvasTitle">Your website starts here</h3>
+          <p id="canvasDescription">Add your business details and create a website concept.</p>
+        </div>
+      </div>
+
+      <button id="previewWebsite" class="dark" disabled>
+        Preview website in new tab ↗
+      </button>
+
+      <p class="hint">The complete website opens separately from the builder.</p>
+    </article>
+  </section>
+
+  <section class="grid lower">
+    <article class="card">
+      <h2>03 · Project history</h2>
+      <div id="projectList">Your saved projects will appear here.</div>
+    </article>
+
+    <article class="card darkcard">
+      <h2>Made for what’s next</h2>
+      <p>Chatbot integration, client workspaces and publishing tools can be connected as STONIC grows.</p>
+      <small>FUTURE-READY FOUNDATION</small>
+    </article>
+  </section>
+
+  <footer>
+    © 2026 STONIC Studio
+    <span>Build · Preview · Deliver</span>
+  </footer>
+</main>
+
+</body>
+          </html>
