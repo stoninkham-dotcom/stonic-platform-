@@ -1,260 +1,237 @@
+const $ = id => document.getElementById(id);
+let site = null;
+const KEY = "stonic_projects_v2";
 
-const STORAGE_KEY = "stonic_projects_v1";
+const esc = s => String(s || "").replace(/[&<>"]/g, c => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"
+}[c]));
 
-let projects = [];
-let activeProjectId = null;
+function build() {
+  const name = $("projectName").value.trim() || "Your Business";
+  const type = $("businessType").value.trim() || "Business";
+  const prompt = $("websitePrompt").value.trim();
+  const color = $("brandColor").value;
 
-const $ = (id) => document.getElementById(id);
+  const kind = (name + " " + type + " " + prompt).toLowerCase();
+  const clinic = /clinic|dental|doctor|medical|health/.test(kind);
+  const food = /restaurant|cafe|food|bakery/.test(kind);
 
-function loadProjects() {
-  try {
-    projects = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch (error) {
-    projects = [];
-  }
-}
+  const services = clinic
+    ? ["General dentistry", "Teeth cleaning", "Cosmetic dentistry", "Dental consultation"]
+    : food
+    ? ["Our menu", "Daily specials", "Private events", "Takeaway"]
+    : ["Our services", "Expert consultation", "Custom solutions", "Ongoing support"];
 
-function saveProjects() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-}
+  const headline = clinic
+    ? "Care that puts your smile first."
+    : food
+    ? "Fresh flavours. Warm welcomes."
+    : "A better experience starts here.";
 
-function getFormData() {
-  return {
-    name: $("name").value.trim() || "Untitled Website",
-    type: $("type").value.trim(),
-    prompt: $("prompt").value.trim()
-  };
-}
-
-function showPreview() {
-  const data = getFormData();
-
-  $("brand").textContent = data.name.toUpperCase();
-  $("title").textContent =
-    data.prompt.split(/[.!?\n]/)[0] || "Your website starts here.";
-
-  $("copy").textContent =
-    data.prompt || "Describe your website to see a preview.";
-
-  $("status").textContent =
-    "Preview updated. This is a website concept, not a published website.";
-}
-
-function saveProject() {
-  const data = getFormData();
-
-  if (!data.prompt) {
-    $("status").textContent = "Please enter your website instructions first.";
-    return;
-  }
-
-  let project = projects.find(
-    (item) => item.id === activeProjectId
-  );
-
-  if (!project) {
-    project = {
-      id: Date.now().toString(),
-      history: [],
-      created: new Date().toISOString()
-    };
-
-    projects.unshift(project);
-    activeProjectId = project.id;
-  }
-
-  project.name = data.name;
-  project.type = data.type;
-  project.prompt = data.prompt;
-  project.updated = new Date().toISOString();
-
-  project.history.unshift({
-    prompt: data.prompt,
-    date: new Date().toISOString()
-  });
-
-  saveProjects();
-
-  $("saved").textContent =
-    "Saved successfully · " + project.history.length + " version(s)";
-
-  $("status").textContent = "Project and edit history saved.";
-  renderProjects();
-}
-
-function escapeText(value) {
-  return String(value || "").replace(/[&<>"']/g, (char) => {
-    const map = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    };
-    return map[char];
-  });
-}
-
-function renderProjects() {
-  const list = $("list");
-
-  if (!projects.length) {
-    list.textContent = "No projects saved yet.";
-    return;
-  }
-
-  list.innerHTML = projects.map((project) => `
-    <article class="panel" style="margin:12px 0">
-      <h3>${escapeText(project.name)}</h3>
-      <p class="muted">
-        ${escapeText(project.type)} ·
-        ${project.history.length} saved version(s)
-      </p>
-      <button data-open="${project.id}">Open</button>
-      <button data-delete="${project.id}">Delete</button>
-    </article>
-  `).join("");
-
-  list.querySelectorAll("[data-open]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const project = projects.find(
-        (item) => item.id === button.dataset.open
-      );
-
-      if (!project) return;
-
-      activeProjectId = project.id;
-      $("name").value = project.name;
-      $("type").value = project.type;
-      $("prompt").value = project.prompt;
-
-      showTab("builder");
-      showPreview();
-    });
-  });
-
-  list.querySelectorAll("[data-delete]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const confirmed = confirm("Delete this project and its history?");
-
-      if (!confirmed) return;
-
-      projects = projects.filter(
-        (item) => item.id !== button.dataset.delete
-      );
-
-      if (activeProjectId === button.dataset.delete) {
-        activeProjectId = null;
-      }
-
-      saveProjects();
-      renderProjects();
-    });
-  });
-}
-
-function showTab(tabName) {
-  document.querySelectorAll(".tab").forEach((tab) => {
-    tab.classList.add("hide");
-  });
-
-  const selectedTab = $(tabName);
-
-  if (selectedTab) {
-    selectedTab.classList.remove("hide");
-  }
-
-  document.querySelectorAll(".nav").forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.tab === tabName
-    );
-  });
-
-  const headings = {
-    builder: "Website Builder",
-    projects: "Projects & History",
-    chatbot: "Chatbot Builder"
-  };
-
-  $("heading").textContent = headings[tabName] || "STONIC";
-  
-  if (tabName === "projects") {
-    renderProjects();
-  }
-}
-
-function createNewProject() {
-  activeProjectId = null;
-
-  $("name").value = "";
-  $("type").value = "";
-  $("prompt").value = "";
-  $("saved").textContent = "New unsaved project";
-  $("status").textContent = "Enter your website instructions.";
-
-  showTab("builder");
-}
-
-function exportWebsite() {
-  const data = getFormData();
-
-  const safeName = escapeText(data.name);
-  const safePrompt = escapeText(data.prompt);
-  const firstLine = escapeText(
-    data.prompt.split(/[.!?\n]/)[0] || data.name
-  );
+  const cards = services.map((s, i) =>
+    `<article><small>0${i + 1}</small><h3>${s}</h3>
+    <p>Thoughtful professional service designed around your needs.</p></article>`
+  ).join("");
 
   const html = `<!doctype html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${safeName}</title>
+<title>${esc(name)}</title>
 <style>
-body{font-family:Arial,sans-serif;margin:0;color:#172033}
-header{padding:25px 8%;color:#245bdb;font-weight:bold}
-main{padding:90px 8%;background:#edf3ff;text-align:center}
-h1{font-size:36px}
-p{line-height:1.7}
+*{box-sizing:border-box}
+body{margin:0;font:16px Arial;color:#17243d;line-height:1.6}
+header{padding:20px 7%;display:flex;justify-content:space-between;border-bottom:1px solid #eee;font-weight:bold}
+nav a{margin-left:20px;color:#526078;text-decoration:none;font-size:13px}
+.hero{padding:90px 8%;background:linear-gradient(120deg,#eef4ff,#fff);display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center}
+.tag,article small{color:${color};font-weight:bold;letter-spacing:2px;text-transform:uppercase}
+.hero h1{font-size:clamp(38px,6vw,65px);line-height:1.05;margin:15px 0}
+.hero p,.intro{color:#65728a;max-width:570px}
+.visual{background:linear-gradient(140deg,${color},#122341);border-radius:24px;min-height:280px;display:grid;place-items:center;color:white;font-size:80px}
+.btn{display:inline-block;background:${color};color:white;padding:13px 20px;border-radius:8px;text-decoration:none;font-weight:bold}
+.section{padding:70px 8%}
+.section h2{font-size:34px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}
+article{border:1px solid #e5eaf2;border-radius:14px;padding:20px}
+article p{font-size:13px;color:#65728a}
+.about{background:#f5f7fb}
+.contact{background:#101e39;color:white}
+.contact p{color:#c5cede}
+.form{max-width:520px;display:grid;gap:12px}
+.form input,.form textarea{padding:13px;border:1px solid #dce3ee;border-radius:8px;font:inherit}
+.foot{padding:25px 8%;background:#091427;color:#c5cede;font-size:12px}
+@media(max-width:700px){
+nav{display:none}
+.hero{grid-template-columns:1fr;padding:60px 7%}
+.visual{min-height:170px}
+.section{padding:55px 7%}
+.cards{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){.cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<header>${safeName}</header>
-<main>
-<h1>${firstLine}</h1>
-<p>${safePrompt}</p>
-</main>
+
+<header>
+<span>${esc(name)}</span>
+<nav>
+<a href="#home">Home</a>
+<a href="#services">Services</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+</nav>
+<a class="btn" href="#contact">Contact us</a>
+</header>
+
+<section class="hero" id="home">
+<div>
+<div class="tag">${esc(type)}</div>
+<h1>${headline}</h1>
+<p>${esc(prompt)}</p>
+<a class="btn" href="#contact">Get started →</a>
+</div>
+<div class="visual">✦</div>
+</section>
+
+<section class="section" id="services">
+<div class="tag">WHAT WE DO</div>
+<h2>Services designed around you</h2>
+<p class="intro">Explore how we can help. Our team is ready to guide you through the next step.</p>
+<div class="cards">${cards}</div>
+</section>
+
+<section class="section about" id="about">
+<div class="tag">ABOUT US</div>
+<h2>People first. Quality always.</h2>
+<p class="intro">${esc(name)} believes in clear communication, trusted expertise and an experience that puts you first.</p>
+</section>
+
+<section class="section contact" id="contact">
+<div class="tag">CONTACT</div>
+<h2>Let's talk</h2>
+<p>This is a visual demo form. It does not send appointment requests yet.</p>
+<form class="form" onsubmit="event.preventDefault();alert('Demo only — connect a booking service to receive requests.');">
+<input required placeholder="Your name">
+<input required type="email" placeholder="Email address">
+<textarea rows="4" placeholder="How can we help?"></textarea>
+<button class="btn">Send request</button>
+</form>
+</section>
+
+<footer class="foot">
+© ${new Date().getFullYear()} ${esc(name)} · Website concept by STONIC
+</footer>
+
 </body>
 </html>`;
 
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  return { name, type, prompt, color, html, updated: new Date().toISOString() };
+}
 
-  link.href = url;
-  link.download = "stonic-website-preview.html";
-  link.click();
+function generate() {
+  site = build();
+  $("canvasTitle").textContent = site.name + " website";
+  $("canvasDescription").textContent =
+    "Professional responsive concept ready. Open the full page in a separate tab.";
+  $("canvasState").textContent = "CONCEPT READY";
+  $("previewWebsite").disabled = false;
+  $("status").textContent = "Concept ready — open Preview website in a new tab.";
+}
+
+function projects() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function render() {
+  const list = projects();
+
+  $("projectList").innerHTML = list.length
+    ? list.map(x => `
+      <div class="project">
+        <span><b>${esc(x.name)}</b><br>
+        ${new Date(x.updated).toLocaleString()}</span>
+        <button data-id="${x.id}">Open</button>
+      </div>`).join("")
+    : "Your saved projects will appear here.";
+
+  document.querySelectorAll("[data-id]").forEach(b => {
+    b.onclick = () => {
+      const x = projects().find(p => p.id == b.dataset.id);
+      if (!x) return;
+
+      site = x;
+      $("projectName").value = x.name;
+      $("businessType").value = x.type;
+      $("websitePrompt").value = x.prompt;
+      $("brandColor").value = x.color;
+      $("canvasTitle").textContent = x.name + " website";
+      $("canvasDescription").textContent = "Saved project loaded. Preview it in a separate tab.";
+      $("canvasState").textContent = "SAVED PROJECT";
+      $("previewWebsite").disabled = false;
+    };
+  });
+}
+
+$("generate").onclick = generate;
+
+$("saveProject").onclick = () => {
+  if (!site) generate();
+
+  const list = projects();
+  list.unshift({ ...site, id: Date.now() });
+
+  localStorage.setItem(KEY, JSON.stringify(list.slice(0, 20)));
+  render();
+  $("status").textContent = "Project saved in this browser.";
+};
+
+$("previewWebsite").onclick = () => {
+  if (!site) return;
+
+  const url = URL.createObjectURL(
+    new Blob([site.html], { type: "text/html" })
+  );
+
+  const tab = window.open(url, "_blank");
+
+  if (!tab) {
+    $("status").textContent = "Pop-up blocked. Allow pop-ups and try again.";
+  }
+
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+};
+
+$("exportProject").onclick = () => {
+  if (!site) generate();
+
+  const url = URL.createObjectURL(
+    new Blob([site.html], { type: "text/html" })
+  );
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "stonic-website.html";
+  a.click();
 
   URL.revokeObjectURL(url);
-}
+};
 
-function initializeApp() {
-  loadProjects();
+$("newProject").onclick = () => {
+  site = null;
+  $("projectName").value = "";
+  $("businessType").value = "";
+  $("websitePrompt").value = "";
+  $("canvasTitle").textContent = "Your website starts here";
+  $("canvasDescription").textContent =
+    "Add your business details and create a website concept.";
+  $("canvasState").textContent = "NOT GENERATED";
+  $("previewWebsite").disabled = true;
+  $("status").textContent = "New project ready.";
+};
 
-  document.querySelectorAll(".nav").forEach((button) => {
-    button.addEventListener("click", () => {
-      showTab(button.dataset.tab);
-    });
-  });
-
-  $("preview").addEventListener("click", showPreview);
-  $("save").addEventListener("click", saveProject);
-  $("new").addEventListener("click", createNewProject);
-  $("export").addEventListener("click", exportWebsite);
-
-  renderProjects();
-}
-
-document.addEventListener("DOMContentLoaded", initializeApp);
-    
+render();
