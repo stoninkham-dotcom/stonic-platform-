@@ -71,7 +71,7 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
   }
   function projects() { try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch{return [];} }
   function renderProjects() {
-    const list=$("projectsList")||$("savedProjects"); if(!list)return;
+    const list=$("projectList")||$("projectsList")||$("savedProjects"); if(!list)return;
     list.innerHTML=""; const all=projects();
     if(!all.length){list.textContent="No saved projects yet.";return;}
     all.forEach(p=>{const b=document.createElement("button");b.type="button";b.textContent=p.name;b.style.cssText="display:block;margin:6px 0";b.onclick=()=>load(p);list.appendChild(b);});
@@ -133,8 +133,9 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
   buttons.desktop?.addEventListener("click",()=>{mode="desktop";render();});
   buttons.mobile?.addEventListener("click",()=>{mode="mobile";render();});
   addEditor();renderProjects();
+  if (!$("editPromptPanel")) console.error("STONIC: Edit with Prompt panel could not be mounted; check .preview-buttons in index.html.");
   if(buttons.preview)buttons.preview.disabled=true;if(buttons.publish)buttons.publish.disabled=true;
   if($("connectionStatus"))$("connectionStatus").textContent=navigator.onLine?"Online":"Offline";
   status("Ready. Enter business details to create a website.");
 });
-    
+      
