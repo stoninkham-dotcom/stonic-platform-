@@ -4,96 +4,222 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ffffff">
-  <title>STONIC | Website Builder</title>
+  <meta name="theme-color" content="#080d1c">
+  <meta name="description" content="STONIC professional AI website builder">
+  <title>STONIC — Website Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand">◇ STONIC</div>
-  <button id="newProject" type="button">＋ New project</button>
-</header>
+<div class="app-shell">
 
-<main class="container">
+  <aside class="sidebar">
+    <a class="brand" href="#">
+      <span class="brand-mark">S</span>
+      <span>STONIC<small>WEBSITE STUDIO</small></span>
+    </a>
 
-  <section class="panel">
-    <h2>01 · Create your website</h2>
+    <div class="side-label">WORKSPACE</div>
+    <nav class="side-nav">
+      <a class="active" href="#builder">✦ Website Builder</a>
+      <a href="#projects">▣ My Projects</a>
+      <a href="#publishing">↗ Publishing</a>
+    </nav>
 
-    <label for="projectName">Project name</label>
-    <input id="projectName" type="text" placeholder="e.g. Bright Smile Dental">
-
-    <label for="businessType">Business type</label>
-    <select id="businessType">
-      <option value="Dental Clinic">Dental Clinic</option>
-      <option value="Restaurant">Restaurant</option>
-      <option value="Real Estate">Real Estate</option>
-      <option value="E-commerce">E-commerce</option>
-      <option value="Agency">Agency</option>
-      <option value="Other Business">Other Business</option>
-    </select>
-
-    <label for="brandColor">Brand color</label>
-    <input id="brandColor" type="color" value="#1764ed">
-
-    <label for="websitePrompt">Describe your website</label>
-    <textarea id="websitePrompt" rows="5" placeholder="Describe your business, services, style and required sections...">A modern dental clinic website with services, team, patient reviews, appointment request form and WhatsApp contact.</textarea>
-
-    <p class="hint">Mention your services, location, style and required sections.</p>
-
-    <button id="generate" class="primary-btn" type="button">
-      Create website concept →
-    </button>
-
-    <p id="status" class="hint" aria-live="polite">Ready to create your website.</p>
-  </section>
-
-  <section class="panel">
-    <h2>02 · Workspace</h2>
-
-    <div class="actions">
-      <button id="saveProject" type="button">Save project</button>
-      <button id="exportProject" type="button">Export HTML</button>
+    <div class="sidebar-bottom">
+      <div class="connection-card">
+        <span id="connectionDot">●</span>
+        <div>
+          <strong id="connectionStatus">Checking connection</strong>
+          <small>Network status</small>
+        </div>
+      </div>
+      <div class="side-footer">STONIC STUDIO · VERSION 2</div>
     </div>
+  </aside>
 
-    <div class="workspace">
-      <div class="workspace-head">
-        <span>● ● ●</span>
-        <span id="workspaceStatus">NOT GENERATED</span>
+  <main class="main-content">
+
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">YOUR CREATIVE WORKSPACE</span>
+        <h1>Website Studio</h1>
+      </div>
+      <div class="top-actions">
+        <span id="saveStatus">All changes saved locally</span>
+        <button id="newProject" type="button">＋ New project</button>
+      </div>
+    </header>
+
+    <section class="welcome-banner">
+      <div>
+        <span class="eyebrow">BUILD SOMETHING AMAZING</span>
+        <h2>Your next great website starts here.</h2>
+        <p>Describe your business. Design your website. Prepare it for publishing.</p>
+      </div>
+      <div class="banner-symbol">✦</div>
+    </section>
+
+    <section class="builder-layout" id="builder">
+
+      <div class="editor-panel panel">
+        <div class="section-heading">
+          <span class="step-number">01</span>
+          <div>
+            <h2>Website Details</h2>
+            <p>Tell us about your business.</p>
+          </div>
+        </div>
+
+        <label for="projectName">Website / Business Name</label>
+        <input id="projectName" type="text" placeholder="e.g. Bright Smile Dental">
+
+        <label for="businessType">Business Category</label>
+        <select id="businessType">
+          <option value="Dental Clinic">Dental Clinic</option>
+          <option value="Restaurant">Restaurant</option>
+          <option value="Real Estate">Real Estate</option>
+          <option value="E-commerce">E-commerce</option>
+          <option value="Agency">Digital Agency</option>
+          <option value="Hotel">Hotel</option>
+          <option value="Portfolio">Personal Portfolio</option>
+          <option value="Education">Education</option>
+          <option value="Other Business">Other Business</option>
+        </select>
+
+        <label for="businessLocation">Business Location</label>
+        <input id="businessLocation" type="text" placeholder="City, Country">
+
+        <label for="websitePrompt">Describe Your Website</label>
+        <textarea id="websitePrompt" rows="6" placeholder="Describe your business, target customers, services, design style and required features..."></textarea>
+
+        <label for="brandColor">Brand Colour</label>
+        <div class="color-row">
+          <input id="brandColor" type="color" value="#3978ff">
+          <span>Choose your main brand colour</span>
+        </div>
+
+        <label for="designStyle">Design Style</label>
+        <select id="designStyle">
+          <option value="Modern Premium">Modern Premium</option>
+          <option value="Minimal">Minimal</option>
+          <option value="Luxury">Luxury</option>
+          <option value="Corporate">Corporate</option>
+          <option value="Creative">Creative</option>
+        </select>
+
+        <label for="templateChoice">Website Template</label>
+        <select id="templateChoice">
+          <option value="Auto">Choose automatically</option>
+          <option value="Professional">Professional</option>
+          <option value="Luxury">Luxury</option>
+          <option value="Modern">Modern</option>
+        </select>
+
+        <div class="feature-heading">Website Sections</div>
+        <div class="section-options">
+          <label><input type="checkbox" name="sections" value="Services" checked> Services</label>
+          <label><input type="checkbox" name="sections" value="About" checked> About</label>
+          <label><input type="checkbox" name="sections" value="Team" checked> Team</label>
+          <label><input type="checkbox" name="sections" value="Gallery" checked> Gallery</label>
+          <label><input type="checkbox" name="sections" value="Reviews" checked> Reviews</label>
+          <label><input type="checkbox" name="sections" value="FAQ" checked> FAQ</label>
+          <label><input type="checkbox" name="sections" value="Contact" checked> Contact</label>
+        </div>
+
+        <button id="generate" class="primary-btn" type="button">
+          ✦ Create Professional Website
+        </button>
+
+        <div class="generation-area" id="generationArea" hidden>
+          <div class="generation-label">
+            <span id="progressText">Preparing website...</span>
+            <strong id="progressPercent">0%</strong>
+          </div>
+          <div class="progress-track">
+            <div id="generationProgress" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <p id="status" class="status-message" aria-live="polite">Ready to build your website.</p>
       </div>
 
-      <div id="canvasState" class="canvas">
-        <div class="sparkle">✦</div>
-        <h2 id="canvasTitle">Your website starts here</h2>
-        <p id="canvasDescription">
-          Add your business details and create a website concept.
-        </p>
+      <div class="preview-panel panel">
+        <div class="section-heading">
+          <span class="step-number">02</span>
+          <div>
+            <h2>Website Preview</h2>
+            <p>Your website workspace.</p>
+          </div>
+        </div>
+
+        <div class="preview-toolbar">
+          <span class="preview-indicator">● <span id="previewStatus">NOT GENERATED</span></span>
+          <div class="preview-actions">
+            <button id="desktopView" type="button">Desktop</button>
+            <button id="mobileView" type="button">Mobile</button>
+          </div>
+        </div>
+
+        <div class="preview-frame" id="canvasState">
+          <div class="empty-preview">
+            <div class="empty-icon">✦</div>
+            <h2 id="canvasTitle">Your website starts here</h2>
+            <p id="canvasDescription">Create your first professional website concept.</p>
+          </div>
+        </div>
+
+        <div class="preview-buttons">
+          <button id="previewWebsite" type="button" disabled>↗ Open Preview</button>
+          <button id="saveProject" type="button">Save Project</button>
+          <button id="exportProject" type="button">↓ Export HTML</button>
+        </div>
+
+        <div class="publish-panel" id="publishing">
+          <div>
+            <span class="eyebrow">READY FOR THE WORLD?</span>
+            <h3>Publish your website</h3>
+            <p>Deploy the finished website and create a public link for your client.</p>
+          </div>
+          <button id="publishWebsite" type="button" disabled>Publish Website ↗</button>
+          <p id="publishStatus" class="status-message" aria-live="polite">Create a website before publishing.</p>
+          <a id="publishedLink" href="#" target="_blank" rel="noopener" hidden>Open published website</a>
+        </div>
       </div>
-    </div>
 
-    <button id="previewWebsite" class="preview-btn" type="button" disabled>
-      Preview website in new tab ↗
-    </button>
+    </section>
 
-    <p class="hint">The complete website opens separately from the builder.</p>
-  </section>
+    <section class="projects-section panel" id="projects">
+      <div class="section-heading">
+        <span class="step-number">03</span>
+        <div>
+          <h2>My Projects</h2>
+          <p>Your saved website projects on this device.</p>
+        </div>
+      </div>
+      <div id="projectList" class="project-list">
+        <div class="empty-projects">No saved projects yet.</div>
+      </div>
+    </section>
 
-  <section class="panel">
-    <h2>03 · Project history</h2>
-    <div id="projectList">
-      Your saved projects will appear here.
-    </div>
-  </section>
+    <footer class="app-footer">
+      <span>© STONIC Website Studio</span>
+      <span>Built for creators and businesses.</span>
+    </footer>
 
-</main>
+  </main>
+</div>
 
-<footer>
-  <p>STONIC Website Builder</p>
-</footer>
-
-<!-- Keep app.js at the bottom so all page elements load first -->
-<script src="app.js"></script>
+<script src="app.js" defer></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js")
+        .catch(error => console.log("Offline setup pending:", error));
+    });
+  }
+</script>
 
 </body>
-      </html>
+            </html>
   
