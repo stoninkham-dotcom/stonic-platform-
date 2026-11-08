@@ -23,12 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     mobile: $("mobileView")
   };
 
+  const STORAGE_KEY = "stonic_website_projects_v3";
+
   let currentHTML = "";
   let currentProject = null;
   let generationTimer = null;
   let previewMode = "desktop";
-
-  const STORAGE_KEY = "stonic_website_projects_v3";
+  let previewWindow = null;
 
   function escapeHTML(value) {
     return String(value || "").replace(/[&<>"']/g, char => ({
@@ -48,12 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateConnection() {
     const online = navigator.onLine;
-    const dot = $("connectionDot");
-    const label = $("connectionStatus");
-
-    if (dot) dot.style.color = online ? "#20c997" : "#ffae42";
-    if (label) label.textContent = online ? "Online" : "Offline";
-
+    if ($("connectionDot")) {
+      $("connectionDot").style.color = online ? "#20c997" : "#ffae42";
+    }
+    if ($("connectionStatus")) {
+      $("connectionStatus").textContent = online ? "Online" : "Offline";
+    }
     if ($("saveStatus")) {
       $("saveStatus").textContent = online
         ? "Local saving available"
@@ -82,39 +83,42 @@ document.addEventListener("DOMContentLoaded", () => {
       "?auto=format&fit=crop&w=1400&q=85";
   }
 
-  function sectionHTML(section, name, type, color) {
+  function sectionHTML(section, name, type) {
     const content = {
       Services: `
-        <section class="section">
+        <section class="section" id="services">
           <div class="container">
             <span class="tag">WHAT WE DO</span>
             <h2>Our Services</h2>
             <div class="cards">
-              <article class="card"><div class="card-icon">✦</div><h3>Professional Service</h3><p>Quality solutions designed around your needs.</p></article>
-              <article class="card"><div class="card-icon">◇</div><h3>Expert Support</h3><p>Friendly guidance from an experienced team.</p></article>
-              <article class="card"><div class="card-icon">✓</div><h3>Trusted Results</h3><p>Careful attention to quality and detail.</p></article>
+              <article class="card"><h3>Professional Service</h3><p>Quality solutions designed around your needs.</p></article>
+              <article class="card"><h3>Expert Support</h3><p>Friendly guidance from an experienced team.</p></article>
+              <article class="card"><h3>Trusted Results</h3><p>Careful attention to quality and detail.</p></article>
             </div>
           </div>
         </section>`,
+
       About: `
-        <section class="section soft">
+        <section class="section soft" id="about">
           <div class="container split">
-            <div><span class="tag">ABOUT US</span><h2>Built around your needs.</h2><p>${escapeHTML(name)} is focused on delivering a thoughtful and professional experience. We combine quality, care and attention to detail.</p></div>
+            <div><span class="tag">ABOUT US</span><h2>Built around your needs.</h2><p>${escapeHTML(name)} is focused on delivering a thoughtful and professional experience.</p></div>
             <img src="${makeImage(type)}" alt="${escapeHTML(type)}" loading="lazy">
           </div>
         </section>`,
+
       Team: `
-        <section class="section">
+        <section class="section" id="team">
           <div class="container"><span class="tag">OUR PEOPLE</span><h2>Meet Our Team</h2>
             <div class="cards">
-              <article class="card"><div class="avatar">A</div><h3>Alex Morgan</h3><p>Senior Specialist</p></article>
-              <article class="card"><div class="avatar">J</div><h3>Jamie Lee</h3><p>Client Experience</p></article>
-              <article class="card"><div class="avatar">S</div><h3>Sam Taylor</h3><p>Operations</p></article>
+              <article class="card"><h3>Alex Morgan</h3><p>Senior Specialist</p></article>
+              <article class="card"><h3>Jamie Lee</h3><p>Client Experience</p></article>
+              <article class="card"><h3>Sam Taylor</h3><p>Operations</p></article>
             </div>
           </div>
         </section>`,
+
       Gallery: `
-        <section class="section soft">
+        <section class="section soft" id="gallery">
           <div class="container"><span class="tag">OUR GALLERY</span><h2>A closer look</h2>
             <div class="gallery">
               <img src="${makeImage(type)}" alt="Gallery image" loading="lazy">
@@ -122,35 +126,37 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
         </section>`,
+
       Reviews: `
-        <section class="section">
+        <section class="section" id="reviews">
           <div class="container"><span class="tag">CLIENT STORIES</span><h2>What people say</h2>
             <div class="cards">
-              <article class="card"><div class="stars">★★★★★</div><p>"A very professional and welcoming experience."</p><strong>Customer Review</strong></article>
-              <article class="card"><div class="stars">★★★★★</div><p>"Great attention to detail and excellent service."</p><strong>Customer Review</strong></article>
-              <article class="card"><div class="stars">★★★★★</div><p>"Helpful team and a smooth experience."</p><strong>Customer Review</strong></article>
+              <article class="card"><div class="stars">★★★★★</div><p>"A professional and welcoming experience."</p></article>
+              <article class="card"><div class="stars">★★★★★</div><p>"Great attention to detail."</p></article>
+              <article class="card"><div class="stars">★★★★★</div><p>"Helpful team and smooth service."</p></article>
             </div>
           </div>
         </section>`,
+
       FAQ: `
-        <section class="section soft">
+        <section class="section soft" id="faq">
           <div class="container"><span class="tag">QUESTIONS</span><h2>Frequently Asked Questions</h2>
-            <details><summary>How can I contact your team?</summary><p>Use the contact section below to reach us.</p></details>
+            <details><summary>How can I contact your team?</summary><p>Use the contact section below.</p></details>
             <details><summary>Where are you located?</summary><p>${escapeHTML(fields.location.value || "Contact us for location details.")}</p></details>
-            <details><summary>How can I learn more?</summary><p>Send us a message and our team will help.</p></details>
           </div>
         </section>`,
+
       Contact: `
-        <section class="section contact-section">
+        <section class="section contact-section" id="contact">
           <div class="container"><span class="tag">GET IN TOUCH</span><h2>Let's talk about your needs.</h2>
-            <p>Contact ${escapeHTML(name)} to learn more about our services.</p>
+            <p>Contact ${escapeHTML(name)} to learn more.</p>
             <form id="demoContactForm">
               <input type="text" placeholder="Your name" required>
               <input type="email" placeholder="Your email" required>
               <textarea placeholder="Your message" required></textarea>
               <button type="submit">Send message</button>
             </form>
-            <p class="form-note">Demo form: connect a secure form service before accepting real customer messages.</p>
+            <p class="form-note">Demo form: connect a secure form service before accepting real messages.</p>
           </div>
         </section>`
     };
@@ -166,12 +172,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const color = /^#[0-9a-f]{6}$/i.test(data.color)
       ? data.color : "#3978ff";
 
-    const sections = data.sections.map(s =>
-      sectionHTML(s, data.name, data.type, color)
+    const dark = data.style === "Luxury";
+
+    const sections = data.sections.map(section =>
+      sectionHTML(section, data.name, data.type)
     ).join("");
 
-    const style = data.style;
-    const dark = style === "Luxury";
+    const nav = [
+      ["Services", "services"],
+      ["About", "about"],
+      ["Team", "team"],
+      ["Gallery", "gallery"],
+      ["Reviews", "reviews"],
+      ["FAQ", "faq"],
+      ["Contact", "contact"]
+    ].filter(item => data.sections.includes(item[0]));
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -204,10 +219,8 @@ nav a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:600}
 .card{padding:27px;border:1px solid #8883;border-radius:14px;background:var(--bg)}
 .card h3{font-size:18px}
 .card p,.split p{color:${dark ? "#d0d0d0" : "#68758b"}}
-.card-icon{font-size:28px;color:var(--brand)}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:45px;align-items:center}
 .split img{width:100%;height:340px;object-fit:cover;border-radius:18px}
-.avatar{width:65px;height:65px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--brand);font-size:25px;font-weight:bold}
 .gallery{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .gallery img{height:270px;width:100%;object-fit:cover;border-radius:14px}
 .stars{color:#e6a82e;letter-spacing:3px}
@@ -236,9 +249,7 @@ nav{gap:12px}
 <div class="logo">${name}</div>
 <nav>
 <a href="#home">Home</a>
-<a href="#services">Services</a>
-<a href="#about">About</a>
-<a href="#contact">Contact</a>
+${nav.map(item => `<a href="#${item[1]}">${item[0]}</a>`).join("")}
 </nav>
 </header>
 <main>
@@ -249,7 +260,7 @@ nav{gap:12px}
 <p>${prompt}</p>
 <a class="btn" href="#contact">Get in touch ↗</a>
 </div>
-<img src="${makeImage(data.type)}" alt="${type}" loading="eager">
+<img src="${makeImage(data.type)}" alt="${type}">
 </section>
 ${sections}
 </main>
@@ -282,11 +293,75 @@ alert("This is a demo form. Connect a secure form service to receive messages.")
     };
   }
 
+  function getProjects() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function saveProject(silent = false) {
+    if (!currentProject) return;
+
+    try {
+      const projects = getProjects();
+      const index = projects.findIndex(p => p.name === currentProject.name);
+
+      if (index >= 0) projects[index] = currentProject;
+      else projects.unshift(currentProject);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects.slice(0, 30)));
+      renderProjects();
+
+      if ($("saveStatus")) {
+        $("saveStatus").textContent = "Project saved on this device";
+      }
+      if (!silent) $("status").textContent = "Project saved successfully.";
+    } catch {
+      if (!silent) alert("Storage is full. Export your website as a backup.");
+    }
+  }
+
+  function updateOpenedPreview() {
+    if (!previewWindow || previewWindow.closed) return false;
+
+    try {
+      previewWindow.document.open();
+      previewWindow.document.write(currentHTML);
+      previewWindow.document.close();
+      return true;
+    } catch {
+      previewWindow = null;
+      return false;
+    }
+  }
+
+  function openPreviewTab() {
+    if (!currentHTML) return;
+
+    if (previewWindow && !previewWindow.closed) {
+      updateOpenedPreview();
+      previewWindow.focus();
+      return;
+    }
+
+    previewWindow = window.open("", "STONIC_WEBSITE_PREVIEW");
+
+    if (!previewWindow) {
+      alert("Please allow pop-ups for this website, then tap Open Preview again.");
+      return;
+    }
+
+    updateOpenedPreview();
+  }
+
   function renderPreview() {
     const frame = $("canvasState");
     if (!frame || !currentHTML) return;
 
     frame.innerHTML = "";
+
     const iframe = document.createElement("iframe");
     iframe.title = "Website preview";
     iframe.setAttribute("sandbox", "allow-scripts allow-forms");
@@ -295,15 +370,35 @@ alert("This is a demo form. Connect a secure form service to receive messages.")
     iframe.style.height = "650px";
     iframe.style.border = "0";
     iframe.srcdoc = currentHTML;
+
     frame.style.display = "flex";
     frame.style.justifyContent = "center";
     frame.appendChild(iframe);
 
     $("previewStatus").textContent = "PREVIEW READY";
-    $("canvasTitle").textContent = currentProject.name;
-    $("canvasDescription").textContent = "Your website concept is ready.";
+
+    // Canvas title and description are outside the iframe.
+    const title = $("canvasTitle");
+    const description = $("canvasDescription");
+    if (title) title.textContent = currentProject.name;
+    if (description) description.textContent = "Your website concept is ready.";
+
     buttons.preview.disabled = false;
     buttons.publish.disabled = false;
+  }
+
+  function updateProject(data) {
+    currentHTML = createWebsite(data);
+
+    currentProject = {
+      ...data,
+      html: currentHTML,
+      updated: new Date().toISOString()
+    };
+
+    renderPreview();
+    updateOpenedPreview();
+    saveProject(true);
   }
 
   function generateWebsite() {
@@ -334,21 +429,13 @@ alert("This is a demo form. Connect a secure form service to receive messages.")
         "Building website sections...",
         "Finishing your preview..."
       ];
-      $("progressText").textContent = messages[
-        Math.min(3, Math.floor(progress / 30))
-      ];
+
+      $("progressText").textContent =
+        messages[Math.min(3, Math.floor(progress / 30))];
 
       if (progress === 100) {
         clearInterval(generationTimer);
-
-        currentHTML = createWebsite(data);
-        currentProject = {
-          ...data,
-          html: currentHTML,
-          updated: new Date().toISOString()
-        };
-
-        renderPreview();
+        updateProject(data);
         buttons.generate.disabled = false;
         $("status").textContent = "Website concept created successfully!";
         $("previewStatus").textContent = "READY";
@@ -356,158 +443,150 @@ alert("This is a demo form. Connect a secure form service to receive messages.")
     }, 120);
   }
 
-  function previewInNewTab() {
-    if (!currentHTML) return;
-    const blob = new Blob([currentHTML], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
-  }
-
-  function getProjects() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    } catch {
-      return [];
-    }
-  }
-
-  function saveProject() {
+  // Edit with Prompt: basic built-in commands, no AI connection yet.
+  function editWithPrompt() {
     if (!currentProject) {
-      alert("Create a website first.");
+      alert("Create or load a website first.");
       return;
     }
 
-    try {
-      const projects = getProjects();
-      const existing = projects.findIndex(p => p.name === currentProject.name);
+    const box = $("editPrompt");
+    const instruction = box.value.trim().toLowerCase();
 
-      if (existing >= 0) projects[existing] = currentProject;
-      else projects.unshift(currentProject);
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects.slice(0, 30)));
-      renderProjects();
-      $("saveStatus").textContent = "Project saved on this device";
-      $("status").textContent = "Project saved successfully.";
-    } catch {
-      alert("Storage is full. Export your website as a backup.");
-    }
-  }
-
-  function renderProjects() {
-    const list = $("projectList");
-    const projects = getProjects();
-
-    if (!projects.length) {
-      list.innerHTML = '<div class="empty-projects">No saved projects yet.</div>';
+    if (!instruction) {
+      alert("Please describe what you want to change.");
       return;
     }
 
-    list.innerHTML = "";
+    const updated = {
+      ...currentProject,
+      sections: [...currentProject.sections]
+    };
 
-    projects.forEach((project, index) => {
-      const item = document.createElement("div");
-      const title = document.createElement("strong");
-      const info = document.createElement("p");
-      const load = document.createElement("button");
+    let changed = false;
 
-      title.textContent = project.name;
-      info.textContent = project.type + " · " +
-        new Date(project.updated).toLocaleString();
-      load.textContent = "Load project";
+    const colorNames = {
+      blue: "#3978ff",
+      red: "#e53935",
+      green: "#198754",
+      purple: "#7952b3",
+      orange: "#f08c00",
+      black: "#171717",
+      pink: "#e64980",
+      teal: "#0f9d9a"
+    };
 
-      load.addEventListener("click", () => {
-        fields.name.value = project.name;
-        fields.type.value = project.type;
-        fields.location.value = project.location || "";
-        fields.prompt.value = project.prompt;
-        fields.color.value = project.color;
-        fields.style.value = project.style;
-        fields.template.value = project.template;
+    for (const [word, color] of Object.entries(colorNames)) {
+      if (instruction.includes("color") && instruction.includes(word)) {
+        updated.color = color;
+        fields.color.value = color;
+        changed = true;
+        break;
+      }
+    }
 
-        document.querySelectorAll('input[name="sections"]').forEach(input => {
-          input.checked = project.sections.includes(input.value);
-        });
+    if (instruction.includes("dark") || instruction.includes("luxury")) {
+      updated.style = "Luxury";
+      fields.style.value = "Luxury";
+      changed = true;
+    }
 
-        currentProject = project;
-        currentHTML = project.html;
-        renderPreview();
-        $("status").textContent = "Saved project loaded.";
+    if (instruction.includes("light") || instruction.includes("bright")) {
+      updated.style = "Modern Premium";
+      fields.style.value = "Modern Premium";
+      changed = true;
+    }
+
+    const addSection = [
+      ["services", "Services"],
+      ["about", "About"],
+      ["team", "Team"],
+      ["gallery", "Gallery"],
+      ["reviews", "Reviews"],
+      ["faq", "FAQ"],
+      ["contact", "Contact"]
+    ];
+
+    for (const [word, section] of addSection) {
+      if (
+        (instruction.includes("add") || instruction.includes("show") ||
+         instruction.includes("include")) &&
+        instruction.includes(word) &&
+        !updated.sections.includes(section)
+      ) {
+        updated.sections.push(section);
+        changed = true;
+      }
+
+      if (
+        (instruction.includes("remove") || instruction.includes("hide")) &&
+        instruction.includes(word)
+      ) {
+        updated.sections = updated.sections.filter(s => s !== section);
+        changed = true;
+      }
+    }
+
+    if (instruction.includes("change name to")) {
+      const newName = box.value.split(/change name to/i)[1]?.trim();
+      if (newName) {
+        updated.name = newName;
+        fields.name.value = newName;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      document.querySelectorAll('input[name="sections"]').forEach(input => {
+        input.checked = updated.sections.includes(input.value);
       });
 
-      item.append(title, info, load);
-      list.appendChild(item);
-    });
-  }
-
-  function exportWebsite() {
-    if (!currentHTML) {
-      alert("Create a website first.");
-      return;
+      updateProject(updated);
+      $("editStatus").textContent =
+        "Website updated. Preview refreshed and project saved.";
+      $("status").textContent = "Your requested changes have been applied.";
+      box.value = "";
+    } else {
+      $("editStatus").textContent =
+        "This basic editor supports color changes, dark/light style, adding/removing sections and changing the name. Full AI prompt editing needs an AI connection.";
     }
-
-    const blob = new Blob([currentHTML], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = (currentProject.name || "stonic-website")
-      .replace(/[^a-z0-9-_]/gi, "-") + ".html";
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  function publishWebsite() {
-    $("publishStatus").textContent =
-      "Publishing backend is not connected yet. Website is ready to export, but no public link has been created.";
-    $("publishedLink").hidden = true;
-  }
+  function addEditPanel() {
+    const previewButtons = document.querySelector(".preview-buttons");
+    if (!previewButtons || $("editPromptPanel")) return;
 
-  buttons.generate.addEventListener("click", generateWebsite);
-  buttons.preview.addEventListener("click", previewInNewTab);
-  buttons.save.addEventListener("click", saveProject);
-  buttons.export.addEventListener("click", exportWebsite);
-  buttons.publish.addEventListener("click", publishWebsite);
+    const panel = document.createElement("div");
+    panel.id = "editPromptPanel";
+    panel.style.cssText =
+      "margin-top:18px;padding:18px;border:1px solid #64748b44;border-radius:12px;background:#111827;";
 
-  buttons.desktop.addEventListener("click", () => {
-    previewMode = "desktop";
-    renderPreview();
-  });
+    const heading = document.createElement("h3");
+    heading.textContent = "✦ Edit with Prompt";
+    heading.style.color = "#fff";
 
-  buttons.mobile.addEventListener("click", () => {
-    previewMode = "mobile";
-    renderPreview();
-  });
+    const help = document.createElement("p");
+    help.textContent =
+      "Try: Change color to blue · Make it dark · Add gallery · Remove team";
+    help.style.color = "#aab5c7";
+    help.style.fontSize = "13px";
 
-  buttons.new.addEventListener("click", () => {
-    if (!confirm("Start a new project? Save your current project first if needed.")) return;
+    const textarea = document.createElement("textarea");
+    textarea.id = "editPrompt";
+    textarea.placeholder = "Describe the change you want...";
+    textarea.rows = 3;
+    textarea.style.cssText =
+      "width:100%;padding:12px;border-radius:8px;box-sizing:border-box;";
 
-    Object.values(fields).forEach(field => {
-      if (field === fields.color) field.value = "#3978ff";
-      else if (field === fields.type) field.selectedIndex = 0;
-      else if (field === fields.style) field.selectedIndex = 0;
-      else if (field === fields.template) field.selectedIndex = 0;
-      else field.value = "";
-    });
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Apply Changes";
+    button.style.marginTop = "10px";
+    button.addEventListener("click", editWithPrompt);
 
-    currentHTML = "";
-    currentProject = null;
-    $("canvasState").innerHTML = `
-      <div class="empty-preview">
-        <div class="empty-icon">✦</div>
-        <h2 id="canvasTitle">Your website starts here</h2>
-        <p id="canvasDescription">Create your first professional website concept.</p>
-      </div>`;
+    const status = document.createElement("p");
+    status.id = "editStatus";
+    status.style.color = "#aab5c7";
+    status.setAttribute("aria-live", "polite");
 
-    $("previewStatus").textContent = "NOT GENERATED";
-    buttons.preview.disabled = true;
-    buttons.publish.disabled = true;
-    $("status").textContent = "Ready for a new project.";
-  });
-
-  renderProjects();
-});
-      
+    
