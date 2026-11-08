@@ -1,25 +1,34 @@
 
 document.addEventListener("DOMContentLoaded", () => {
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
 
-  const projectName = $("projectName");
-  const businessType = $("businessType");
-  const brandColor = $("brandColor");
-  const websitePrompt = $("websitePrompt");
-  const generateBtn = $("generate");
-  const status = $("status");
-  const canvasState = $("canvasState");
-  const canvasTitle = $("canvasTitle");
-  const canvasDescription = $("canvasDescription");
-  const previewBtn = $("previewWebsite");
-  const saveBtn = $("saveProject");
-  const exportBtn = $("exportProject");
-  const projectList = $("projectList");
-  const newProjectBtn = $("newProject");
+  const fields = {
+    name: $("projectName"),
+    type: $("businessType"),
+    location: $("businessLocation"),
+    prompt: $("websitePrompt"),
+    color: $("brandColor"),
+    style: $("designStyle"),
+    template: $("templateChoice")
+  };
 
-  let generatedHTML = "";
+  const buttons = {
+    generate: $("generate"),
+    preview: $("previewWebsite"),
+    save: $("saveProject"),
+    export: $("exportProject"),
+    publish: $("publishWebsite"),
+    new: $("newProject"),
+    desktop: $("desktopView"),
+    mobile: $("mobileView")
+  };
+
+  let currentHTML = "";
   let currentProject = null;
-  let progressTimer = null;
+  let generationTimer = null;
+  let previewMode = "desktop";
+
+  const STORAGE_KEY = "stonic_website_projects_v3";
 
   function escapeHTML(value) {
     return String(value || "").replace(/[&<>"']/g, char => ({
@@ -31,219 +40,473 @@ document.addEventListener("DOMContentLoaded", () => {
     })[char]);
   }
 
-  function createWebsite(name, type, color, prompt) {
-    const safeName = escapeHTML(name || "My Business");
-    const safeType = escapeHTML(type || "Business");
-    const safePrompt = escapeHTML(prompt || "Welcome to our website.");
+  function getSections() {
+    return [...document.querySelectorAll(
+      'input[name="sections"]:checked'
+    )].map(item => item.value);
+  }
+
+  function updateConnection() {
+    const online = navigator.onLine;
+    const dot = $("connectionDot");
+    const label = $("connectionStatus");
+
+    if (dot) dot.style.color = online ? "#20c997" : "#ffae42";
+    if (label) label.textContent = online ? "Online" : "Offline";
+
+    if ($("saveStatus")) {
+      $("saveStatus").textContent = online
+        ? "Local saving available"
+        : "Offline · Local saving available";
+    }
+  }
+
+  window.addEventListener("online", updateConnection);
+  window.addEventListener("offline", updateConnection);
+  updateConnection();
+
+  function makeImage(type) {
+    const images = {
+      "Dental Clinic": "photo-1629909613654-28e377c37b09",
+      "Restaurant": "photo-1517248135467-4c7edcad34c4",
+      "Real Estate": "photo-1600607687939-ce8a6c25118c",
+      "E-commerce": "photo-1441986300917-64674bd600d8",
+      "Agency": "photo-1497366754035-f200968a6e72",
+      "Hotel": "photo-1566073771259-6a8506099945",
+      "Education": "photo-1509062522246-3755977927d7",
+      "Portfolio": "photo-1497366811353-6870744d04b2"
+    };
+
+    const id = images[type] || "photo-1497366754035-f200968a6e72";
+    return "https://images.unsplash.com/" + id +
+      "?auto=format&fit=crop&w=1400&q=85";
+  }
+
+  function sectionHTML(section, name, type, color) {
+    const content = {
+      Services: `
+        <section class="section">
+          <div class="container">
+            <span class="tag">WHAT WE DO</span>
+            <h2>Our Services</h2>
+            <div class="cards">
+              <article class="card"><div class="card-icon">✦</div><h3>Professional Service</h3><p>Quality solutions designed around your needs.</p></article>
+              <article class="card"><div class="card-icon">◇</div><h3>Expert Support</h3><p>Friendly guidance from an experienced team.</p></article>
+              <article class="card"><div class="card-icon">✓</div><h3>Trusted Results</h3><p>Careful attention to quality and detail.</p></article>
+            </div>
+          </div>
+        </section>`,
+      About: `
+        <section class="section soft">
+          <div class="container split">
+            <div><span class="tag">ABOUT US</span><h2>Built around your needs.</h2><p>${escapeHTML(name)} is focused on delivering a thoughtful and professional experience. We combine quality, care and attention to detail.</p></div>
+            <img src="${makeImage(type)}" alt="${escapeHTML(type)}" loading="lazy">
+          </div>
+        </section>`,
+      Team: `
+        <section class="section">
+          <div class="container"><span class="tag">OUR PEOPLE</span><h2>Meet Our Team</h2>
+            <div class="cards">
+              <article class="card"><div class="avatar">A</div><h3>Alex Morgan</h3><p>Senior Specialist</p></article>
+              <article class="card"><div class="avatar">J</div><h3>Jamie Lee</h3><p>Client Experience</p></article>
+              <article class="card"><div class="avatar">S</div><h3>Sam Taylor</h3><p>Operations</p></article>
+            </div>
+          </div>
+        </section>`,
+      Gallery: `
+        <section class="section soft">
+          <div class="container"><span class="tag">OUR GALLERY</span><h2>A closer look</h2>
+            <div class="gallery">
+              <img src="${makeImage(type)}" alt="Gallery image" loading="lazy">
+              <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80" alt="Workspace" loading="lazy">
+            </div>
+          </div>
+        </section>`,
+      Reviews: `
+        <section class="section">
+          <div class="container"><span class="tag">CLIENT STORIES</span><h2>What people say</h2>
+            <div class="cards">
+              <article class="card"><div class="stars">★★★★★</div><p>"A very professional and welcoming experience."</p><strong>Customer Review</strong></article>
+              <article class="card"><div class="stars">★★★★★</div><p>"Great attention to detail and excellent service."</p><strong>Customer Review</strong></article>
+              <article class="card"><div class="stars">★★★★★</div><p>"Helpful team and a smooth experience."</p><strong>Customer Review</strong></article>
+            </div>
+          </div>
+        </section>`,
+      FAQ: `
+        <section class="section soft">
+          <div class="container"><span class="tag">QUESTIONS</span><h2>Frequently Asked Questions</h2>
+            <details><summary>How can I contact your team?</summary><p>Use the contact section below to reach us.</p></details>
+            <details><summary>Where are you located?</summary><p>${escapeHTML(fields.location.value || "Contact us for location details.")}</p></details>
+            <details><summary>How can I learn more?</summary><p>Send us a message and our team will help.</p></details>
+          </div>
+        </section>`,
+      Contact: `
+        <section class="section contact-section">
+          <div class="container"><span class="tag">GET IN TOUCH</span><h2>Let's talk about your needs.</h2>
+            <p>Contact ${escapeHTML(name)} to learn more about our services.</p>
+            <form id="demoContactForm">
+              <input type="text" placeholder="Your name" required>
+              <input type="email" placeholder="Your email" required>
+              <textarea placeholder="Your message" required></textarea>
+              <button type="submit">Send message</button>
+            </form>
+            <p class="form-note">Demo form: connect a secure form service before accepting real customer messages.</p>
+          </div>
+        </section>`
+    };
+
+    return content[section] || "";
+  }
+
+  function createWebsite(data) {
+    const name = escapeHTML(data.name);
+    const type = escapeHTML(data.type);
+    const location = escapeHTML(data.location || "");
+    const prompt = escapeHTML(data.prompt);
+    const color = /^#[0-9a-f]{6}$/i.test(data.color)
+      ? data.color : "#3978ff";
+
+    const sections = data.sections.map(s =>
+      sectionHTML(s, data.name, data.type, color)
+    ).join("");
+
+    const style = data.style;
+    const dark = style === "Luxury";
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${safeName}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="${prompt.slice(0,150)}">
+<title>${name} | Official Website</title>
 <style>
+:root{--brand:${color};--ink:${dark ? "#f8f6f0" : "#182238"};--bg:${dark ? "#171717" : "#ffffff"};--soft:${dark ? "#242424" : "#f3f6fb"}}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;color:#172033;line-height:1.6}
-header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;background:white;position:sticky;top:0}
-header strong{font-size:24px;color:${color}}
-nav a{margin-left:18px;text-decoration:none;color:#172033}
-.hero{padding:100px 7%;background:#f0f5ff;text-align:center}
-.hero h1{font-size:clamp(32px,6vw,58px);margin:0 0 15px}
-.hero p{font-size:18px;max-width:650px;margin:15px auto}
-.btn{display:inline-block;background:${color};color:white;padding:14px 25px;border-radius:8px;text-decoration:none;margin-top:15px}
-section{padding:65px 7%;text-align:center}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:30px}
-.card{padding:25px;border:1px solid #e5e7eb;border-radius:14px}
-footer{padding:30px;text-align:center;background:#172033;color:white}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--bg);line-height:1.7}
+img{max-width:100%;display:block}
+.container{width:min(1120px,90%);margin:auto}
+header{padding:19px 5%;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--bg);position:sticky;top:0;z-index:5;border-bottom:1px solid #8882}
+.logo{font-size:22px;font-weight:800;color:var(--brand)}
+nav{display:flex;gap:18px;flex-wrap:wrap}
+nav a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:600}
+.hero{min-height:540px;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:35px;padding:65px 5%;background:var(--soft)}
+.hero h1{font-size:clamp(38px,5vw,65px);line-height:1.08;letter-spacing:-2px;margin:14px 0}
+.hero p{font-size:17px;max-width:560px;color:${dark ? "#d0d0d0" : "#627087"}}
+.hero img{width:100%;height:390px;object-fit:cover;border-radius:20px}
+.tag{color:var(--brand);font-size:11px;font-weight:800;letter-spacing:2px}
+.btn,button{display:inline-block;border:0;border-radius:8px;background:var(--brand);color:white;padding:14px 22px;text-decoration:none;font-weight:700;cursor:pointer}
+.section{padding:85px 0}
+.section h2{font-size:clamp(30px,4vw,43px);line-height:1.2;margin:12px 0 25px}
+.soft{background:var(--soft)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px}
+.card{padding:27px;border:1px solid #8883;border-radius:14px;background:var(--bg)}
+.card h3{font-size:18px}
+.card p,.split p{color:${dark ? "#d0d0d0" : "#68758b"}}
+.card-icon{font-size:28px;color:var(--brand)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:45px;align-items:center}
+.split img{width:100%;height:340px;object-fit:cover;border-radius:18px}
+.avatar{width:65px;height:65px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--brand);font-size:25px;font-weight:bold}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.gallery img{height:270px;width:100%;object-fit:cover;border-radius:14px}
+.stars{color:#e6a82e;letter-spacing:3px}
+details{padding:17px;border-bottom:1px solid #8885}
+summary{font-weight:bold;cursor:pointer}
+.contact-section{background:var(--soft)}
+form{max-width:560px;display:grid;gap:12px;margin-top:25px}
+form input,form textarea{width:100%;padding:14px;border:1px solid #ccd3df;border-radius:8px;font:inherit;background:white;color:#182238}
+form textarea{min-height:110px}
+.form-note{font-size:11px;color:#78859a}
+footer{padding:30px 5%;background:#111b2c;color:white;text-align:center}
+@media(max-width:720px){
+header{align-items:flex-start;flex-direction:column}
+nav{gap:12px}
+.hero,.split{grid-template-columns:1fr}
+.hero{padding-top:45px}
+.hero img{height:260px}
+.cards{grid-template-columns:1fr}
+.gallery{grid-template-columns:1fr}
+.section{padding:60px 0}
+}
 </style>
 </head>
 <body>
-<header><strong>${safeName}</strong><nav><a href="#home">Home</a><a href="#services">Services</a><a href="#about">About</a><a href="#contact">Contact</a></nav></header>
+<header>
+<div class="logo">${name}</div>
+<nav>
+<a href="#home">Home</a>
+<a href="#services">Services</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+</nav>
+</header>
 <main>
-<div class="hero" id="home">
-<h1>Welcome to ${safeName}</h1>
-<p>${safePrompt}</p>
-<a class="btn" href="#contact">Get in touch</a>
+<section class="hero" id="home">
+<div>
+<span class="tag">${type.toUpperCase()} · ${location.toUpperCase()}</span>
+<h1>${name}</h1>
+<p>${prompt}</p>
+<a class="btn" href="#contact">Get in touch ↗</a>
 </div>
-<section id="services"><h2>Our Services</h2>
-<div class="cards">
-<div class="card"><h3>Quality Service</h3><p>Professional solutions for your needs.</p></div>
-<div class="card"><h3>Expert Team</h3><p>Friendly and experienced support.</p></div>
-<div class="card"><h3>Customer Care</h3><p>We put our customers first.</p></div>
-</div></section>
-<section id="about"><h2>About Us</h2><p>Welcome to our ${safeType.toLowerCase()} business. We are here to serve you.</p></section>
-<section id="contact"><h2>Contact Us</h2><p>Get in touch with our team today.</p><a class="btn" href="mailto:hello@example.com">Contact Us</a></section>
+<img src="${makeImage(data.type)}" alt="${type}" loading="eager">
+</section>
+${sections}
 </main>
-<footer>© ${new Date().getFullYear()} ${safeName}. All rights reserved.</footer>
-</body></html>`;
+<footer>© ${new Date().getFullYear()} ${name}. All rights reserved.</footer>
+<script>
+document.getElementById("demoContactForm")?.addEventListener("submit",function(e){
+e.preventDefault();
+alert("This is a demo form. Connect a secure form service to receive messages.");
+});
+<\/script>
+</body>
+</html>`;
   }
 
-  function showProgress() {
-    canvasState.innerHTML = `
-      <div style="padding:45px 20px;text-align:center">
-        <div style="font-size:20px;font-weight:700;margin-bottom:18px">Creating your website...</div>
-        <div style="height:12px;background:#e5eaf3;border-radius:20px;overflow:hidden">
-          <div id="generationProgress" style="height:100%;width:0%;background:#1764ed;border-radius:20px;transition:width .25s"></div>
-        </div>
-        <p id="progressText" style="color:#687386;margin-top:12px">Preparing your design · 0%</p>
-      </div>`;
+  function getData() {
+    if (!fields.name.value.trim() || !fields.prompt.value.trim()) {
+      alert("Please enter a business name and website description.");
+      return null;
+    }
+
+    return {
+      name: fields.name.value.trim(),
+      type: fields.type.value,
+      location: fields.location.value.trim(),
+      prompt: fields.prompt.value.trim(),
+      color: fields.color.value,
+      style: fields.style.value,
+      template: fields.template.value,
+      sections: getSections()
+    };
+  }
+
+  function renderPreview() {
+    const frame = $("canvasState");
+    if (!frame || !currentHTML) return;
+
+    frame.innerHTML = "";
+    const iframe = document.createElement("iframe");
+    iframe.title = "Website preview";
+    iframe.setAttribute("sandbox", "allow-scripts allow-forms");
+    iframe.style.width = previewMode === "mobile" ? "375px" : "100%";
+    iframe.style.maxWidth = "100%";
+    iframe.style.height = "650px";
+    iframe.style.border = "0";
+    iframe.srcdoc = currentHTML;
+    frame.style.display = "flex";
+    frame.style.justifyContent = "center";
+    frame.appendChild(iframe);
+
+    $("previewStatus").textContent = "PREVIEW READY";
+    $("canvasTitle").textContent = currentProject.name;
+    $("canvasDescription").textContent = "Your website concept is ready.";
+    buttons.preview.disabled = false;
+    buttons.publish.disabled = false;
   }
 
   function generateWebsite() {
-    if (!projectName || !websitePrompt || !canvasState) {
-      alert("Some required page elements are missing. Please check index.html.");
-      return;
-    }
+    const data = getData();
+    if (!data) return;
 
-    if (!projectName.value.trim() || !websitePrompt.value.trim()) {
-      alert("Please enter a project name and website description.");
-      return;
-    }
+    clearInterval(generationTimer);
+    buttons.generate.disabled = true;
+    buttons.preview.disabled = true;
+    buttons.publish.disabled = true;
 
-    clearInterval(progressTimer);
-    generateBtn.disabled = true;
-    generateBtn.textContent = "Creating...";
-    if (status) status.textContent = "Building your website concept...";
-    if (previewBtn) previewBtn.disabled = true;
-
-    showProgress();
-
-    const name = projectName.value.trim();
-    const type = businessType ? businessType.value : "Business";
-    const color = brandColor && brandColor.value ? brandColor.value : "#1764ed";
-    const prompt = websitePrompt.value.trim();
+    $("generationArea").hidden = false;
+    $("status").textContent = "Preparing your website concept...";
+    $("previewStatus").textContent = "GENERATING";
 
     let progress = 0;
-    progressTimer = setInterval(() => {
+    $("generationProgress").style.width = "0%";
+    $("progressPercent").textContent = "0%";
+
+    generationTimer = setInterval(() => {
       progress = Math.min(progress + 10, 100);
+      $("generationProgress").style.width = progress + "%";
+      $("progressPercent").textContent = progress + "%";
 
-      const bar = $("generationProgress");
-      const label = $("progressText");
-      if (bar) bar.style.width = progress + "%";
-      if (label) label.textContent = "Creating website concept · " + progress + "%";
+      const messages = [
+        "Preparing layout...",
+        "Creating your design...",
+        "Building website sections...",
+        "Finishing your preview..."
+      ];
+      $("progressText").textContent = messages[
+        Math.min(3, Math.floor(progress / 30))
+      ];
 
-      if (progress >= 100) {
-        clearInterval(progressTimer);
+      if (progress === 100) {
+        clearInterval(generationTimer);
 
-        generatedHTML = createWebsite(name, type, color, prompt);
+        currentHTML = createWebsite(data);
         currentProject = {
-          name,
-          type,
-          color,
-          prompt,
-          html: generatedHTML,
-          updated: new Date().toLocaleString()
+          ...data,
+          html: currentHTML,
+          updated: new Date().toISOString()
         };
 
-        canvasState.innerHTML = `
-          <div style="padding:45px 20px;text-align:center">
-            <div style="font-size:42px;color:#16834a">✓</div>
-            <h2 style="margin:12px 0">Website concept created!</h2>
-            <p style="color:#687386">Your website is ready to preview.</p>
-          </div>`;
-
-        if (canvasTitle) canvasTitle.textContent = name;
-        if (canvasDescription) canvasDescription.textContent = "Website concept generated successfully.";
-        if (previewBtn) previewBtn.disabled = false;
-        generateBtn.disabled = false;
-        generateBtn.textContent = "Create website concept →";
-        if (status) status.textContent = "Website created successfully!";
+        renderPreview();
+        buttons.generate.disabled = false;
+        $("status").textContent = "Website concept created successfully!";
+        $("previewStatus").textContent = "READY";
       }
     }, 120);
   }
 
-  function previewWebsite() {
-    if (!generatedHTML) {
-      alert("Create your website first.");
-      return;
-    }
-
-    const blob = new Blob([generatedHTML], { type: "text/html" });
+  function previewInNewTab() {
+    if (!currentHTML) return;
+    const blob = new Blob([currentHTML], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     window.open(url, "_blank");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  function getProjects() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
   }
 
   function saveProject() {
     if (!currentProject) {
-      alert("Create a website before saving.");
+      alert("Create a website first.");
       return;
     }
 
     try {
-      const projects = JSON.parse(localStorage.getItem("stonicProjects") || "[]");
-      projects.unshift(currentProject);
-      localStorage.setItem("stonicProjects", JSON.stringify(projects.slice(0, 30)));
+      const projects = getProjects();
+      const existing = projects.findIndex(p => p.name === currentProject.name);
+
+      if (existing >= 0) projects[existing] = currentProject;
+      else projects.unshift(currentProject);
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(projects.slice(0, 30)));
       renderProjects();
-      if (status) status.textContent = "Project saved on this device.";
-      alert("Project saved successfully!");
-    } catch (error) {
-      alert("Could not save project. Browser storage may be full.");
+      $("saveStatus").textContent = "Project saved on this device";
+      $("status").textContent = "Project saved successfully.";
+    } catch {
+      alert("Storage is full. Export your website as a backup.");
     }
   }
 
   function renderProjects() {
-    if (!projectList) return;
+    const list = $("projectList");
+    const projects = getProjects();
 
-    const projects = JSON.parse(localStorage.getItem("stonicProjects") || "[]");
-    projectList.innerHTML = projects.length
-      ? projects.map((p, i) =>
-        `<div style="padding:12px;border-bottom:1px solid #eee">
-          <strong>${escapeHTML(p.name)}</strong>
-          <div style="color:#687386;font-size:13px">${escapeHTML(p.updated || "")}</div>
-          <button type="button" data-project="${i}">Load project</button>
-        </div>`
-      ).join("")
-      : "Your saved projects will appear here.";
-
-    projectList.querySelectorAll("[data-project]").forEach(button => {
-      button.addEventListener("click", () => {
-        const p = projects[Number(button.dataset.project)];
-        if (!p) return;
-        projectName.value = p.name;
-        if (businessType) businessType.value = p.type;
-        if (brandColor) brandColor.value = p.color;
-        websitePrompt.value = p.prompt;
-        generatedHTML = p.html;
-        currentProject = p;
-        canvasState.innerHTML = "<div style='padding:40px;text-align:center'><h2>Saved website loaded</h2><p>Your saved concept is ready.</p></div>";
-        if (previewBtn) previewBtn.disabled = false;
-        if (status) status.textContent = "Saved project loaded.";
-      });
-    });
-  }
-
-  function exportHTML() {
-    if (!generatedHTML) {
-      alert("Create your website first.");
+    if (!projects.length) {
+      list.innerHTML = '<div class="empty-projects">No saved projects yet.</div>';
       return;
     }
 
-    const blob = new Blob([generatedHTML], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = (projectName.value.trim() || "stonic-website") + ".html";
-    link.click();
-    URL.revokeObjectURL(url);
-  }
+    list.innerHTML = "";
 
-  if (generateBtn) generateBtn.addEventListener("click", generateWebsite);
-  if (previewBtn) previewBtn.addEventListener("click", previewWebsite);
-  if (saveBtn) saveBtn.addEventListener("click", saveProject);
-  if (exportBtn) exportBtn.addEventListener("click", exportHTML);
+    projects.forEach((project, index) => {
+      const item = document.createElement("div");
+      const title = document.createElement("strong");
+      const info = document.createElement("p");
+      const load = document.createElement("button");
 
-  if (newProjectBtn) {
-    newProjectBtn.addEventListener("click", () => {
-      if (projectName) projectName.value = "";
-      if (websitePrompt) websitePrompt.value = "";
-      generatedHTML = "";
-      currentProject = null;
-      if (previewBtn) previewBtn.disabled = true;
-      if (canvasState) canvasState.innerHTML = "<div style='padding:45px;text-align:center'><h2>Your website starts here</h2><p>Add your business details and create a website concept.</p></div>";
-      if (status) status.textContent = "Ready for a new project.";
+      title.textContent = project.name;
+      info.textContent = project.type + " · " +
+        new Date(project.updated).toLocaleString();
+      load.textContent = "Load project";
+
+      load.addEventListener("click", () => {
+        fields.name.value = project.name;
+        fields.type.value = project.type;
+        fields.location.value = project.location || "";
+        fields.prompt.value = project.prompt;
+        fields.color.value = project.color;
+        fields.style.value = project.style;
+        fields.template.value = project.template;
+
+        document.querySelectorAll('input[name="sections"]').forEach(input => {
+          input.checked = project.sections.includes(input.value);
+        });
+
+        currentProject = project;
+        currentHTML = project.html;
+        renderPreview();
+        $("status").textContent = "Saved project loaded.";
+      });
+
+      item.append(title, info, load);
+      list.appendChild(item);
     });
   }
+
+  function exportWebsite() {
+    if (!currentHTML) {
+      alert("Create a website first.");
+      return;
+    }
+
+    const blob = new Blob([currentHTML], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = (currentProject.name || "stonic-website")
+      .replace(/[^a-z0-9-_]/gi, "-") + ".html";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function publishWebsite() {
+    $("publishStatus").textContent =
+      "Publishing backend is not connected yet. Website is ready to export, but no public link has been created.";
+    $("publishedLink").hidden = true;
+  }
+
+  buttons.generate.addEventListener("click", generateWebsite);
+  buttons.preview.addEventListener("click", previewInNewTab);
+  buttons.save.addEventListener("click", saveProject);
+  buttons.export.addEventListener("click", exportWebsite);
+  buttons.publish.addEventListener("click", publishWebsite);
+
+  buttons.desktop.addEventListener("click", () => {
+    previewMode = "desktop";
+    renderPreview();
+  });
+
+  buttons.mobile.addEventListener("click", () => {
+    previewMode = "mobile";
+    renderPreview();
+  });
+
+  buttons.new.addEventListener("click", () => {
+    if (!confirm("Start a new project? Save your current project first if needed.")) return;
+
+    Object.values(fields).forEach(field => {
+      if (field === fields.color) field.value = "#3978ff";
+      else if (field === fields.type) field.selectedIndex = 0;
+      else if (field === fields.style) field.selectedIndex = 0;
+      else if (field === fields.template) field.selectedIndex = 0;
+      else field.value = "";
+    });
+
+    currentHTML = "";
+    currentProject = null;
+    $("canvasState").innerHTML = `
+      <div class="empty-preview">
+        <div class="empty-icon">✦</div>
+        <h2 id="canvasTitle">Your website starts here</h2>
+        <p id="canvasDescription">Create your first professional website concept.</p>
+      </div>`;
+
+    $("previewStatus").textContent = "NOT GENERATED";
+    buttons.preview.disabled = true;
+    buttons.publish.disabled = true;
+    $("status").textContent = "Ready for a new project.";
+  });
 
   renderProjects();
 });
