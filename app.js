@@ -11,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     desktop: $("desktopView"), mobile: $("mobileView")
   };
   const KEY = "stonic_website_projects_v4";
-  // Replace this with your deployed Cloudflare Worker URL after setup.
-  const AI_ENDPOINT = "PASTE_YOUR_CLOUDFLARE_WORKER_URL_HERE";
+  const AI_ENDPOINT = "https://stonic-gemini.khn596702.workers.dev";
+
   let html = "", project = null, timer = null, mode = "desktop", previewTab = null;
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c =>
     ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Portfolio:"photo-1497366811353-6870744d04b2"
   };
   const img = type => "https://images.unsplash.com/" + (images[type] || images.Agency) + "?auto=format&fit=crop&w=1400&q=85";
+
   function sectionHTML(s, d) {
     const n = esc(d.name), photo = img(d.type);
     const map = {
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     return map[s] || "";
   }
+
   function build(d) {
     const name = esc(d.name), type = esc(d.type), prompt = esc(d.prompt);
     const color = /^#[0-9a-f]{6}$/i.test(d.color) ? d.color : "#3978ff";
@@ -58,6 +60,7 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}.hero,.split{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.gallery{grid-template-columns:1fr}.hero img{height:240px}}
 </style></head><body><header><div class="logo">${name}</div><nav><a href="#home">Home</a>${nav}</nav></header><main><section class="hero" id="home"><div><small>${type.toUpperCase()}</small><h1>${name}</h1><p>${prompt}</p><a class="btn" href="#contact">Get in touch</a></div><img src="${img(d.type)}" alt="${type}"></section>${(d.sections||[]).map(s=>sectionHTML(s,d)).join("")}</main><footer>© ${new Date().getFullYear()} ${name}. All rights reserved.</footer><script>document.getElementById("demoContactForm")?.addEventListener("submit",e=>{e.preventDefault();alert("Demo form only.");});<\/script></body></html>`;
   }
+
   function getData() {
     if (!fields.name?.value.trim() || !fields.prompt?.value.trim()) { alert("Enter business name and website description."); return null; }
     return {name:fields.name.value.trim(),type:fields.type?.value||"Agency",location:fields.location?.value.trim()||"",prompt:fields.prompt.value.trim(),color:fields.color?.value||"#3978ff",style:fields.style?.value||"Modern Premium",template:fields.template?.value||"Default",sections:sections()};
@@ -84,12 +87,11 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
   function generate(){
     const d=getData();if(!d)return;clearInterval(timer);if(buttons.generate)buttons.generate.disabled=true;if(buttons.preview)buttons.preview.disabled=true;if(buttons.publish)buttons.publish.disabled=true;
     if($("generationArea"))$("generationArea").hidden=false;status("Preparing website...");
-    let p=0;timer=setInterval(()=>{p=Math.min(100,p+10);if($("generationProgress"))$("generationProgress").style.width=p+"%";if($("progressPercent"))$("progressPercent").textContent=p+"%";if($("progressText"))$("progressText").textContent="Building your website...";if(p===100){clearInterval(timer);update(d);if(buttons.generate)buttons.generate.disabled=false;status("Website concept created. Use Edit with Prompt for AI changes once backend is connected.");}},100);
+    let p=0;timer=setInterval(()=>{p=Math.min(100,p+10);if($("generationProgress"))$("generationProgress").style.width=p+"%";if($("progressPercent"))$("progressPercent").textContent=p+"%";if($("progressText"))$("progressText").textContent="Building your website...";if(p===100){clearInterval(timer);update(d);if(buttons.generate)buttons.generate.disabled=false;status("Website concept created. Use Edit with Prompt for AI changes.");}},100);
   }
   async function edit(){
     if(!project){alert("Create or load a website first.");return;}
     const box=$("editPrompt"),raw=box?.value.trim()||"";if(!raw){alert("Describe the change first.");return;}
-    if(AI_ENDPOINT.startsWith("PASTE_")){if($("editStatus"))$("editStatus").textContent="Backend URL not configured yet. Deploy the Worker and add its URL in app.js.";return;}
     const button=$("applyPromptChanges");if(button)button.disabled=true;
     if($("editStatus"))$("editStatus").textContent="Gemini is editing your existing website...";
     try{
@@ -103,7 +105,7 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
   function addEditor(){
     if($("editPromptPanel"))return;const anchor=document.querySelector(".preview-buttons")||$("previewWebsite")?.parentElement||$("canvasState")?.parentElement;if(!anchor)return;
     const panel=document.createElement("section");panel.id="editPromptPanel";panel.style.cssText="margin:18px 0;padding:18px;border:1px solid #64748b55;border-radius:12px;background:#111827;color:white;width:100%";
-    panel.innerHTML='<h3 style="color:white">✦ Edit with Prompt</h3><p style="color:#aab5c7;font-size:13px">Tell Gemini exactly what you want changed. It will update the existing website.</p><textarea id="editPrompt" rows="3" placeholder="Example: Redesign the hero section with a premium dental clinic banner, smooth animations, elegant typography and a clear appointment button." style="width:100%;padding:12px;box-sizing:border-box"></textarea><button id="applyPromptChanges" type="button" style="margin-top:10px">Apply AI Changes</button><p id="editStatus" style="color:#aab5c7" aria-live="polite"></p>';
+    panel.innerHTML='<h3 style="color:white">✦ Edit with Prompt</h3><p style="color:#aab5c7;font-size:13px">Tell Gemini exactly what you want changed. It will update the existing website.</p><textarea id="editPrompt" rows="3" placeholder="Example: Redesign the hero section with a premium business banner, smooth animations, elegant typography and a clear contact button." style="width:100%;padding:12px;box-sizing:border-box"></textarea><button id="applyPromptChanges" type="button" style="margin-top:10px">Apply AI Changes</button><p id="editStatus" style="color:#aab5c7" aria-live="polite"></p>';
     anchor.insertAdjacentElement("afterend",panel);$("applyPromptChanges").addEventListener("click",edit);
   }
   function load(p){project={...p};html=p.html||build(p);Object.keys(fields).forEach(k=>{if(fields[k]&&p[k]!==undefined)fields[k].value=p[k];});document.querySelectorAll('input[name="sections"]').forEach(x=>x.checked=(p.sections||[]).includes(x.value));render();status("Project loaded.");}
@@ -117,4 +119,4 @@ form{display:grid;gap:12px;max-width:550px}input,textarea{padding:13px;border:1p
   if($("connectionStatus"))$("connectionStatus").textContent=navigator.onLine?"Online":"Offline";
   status("Ready. Enter business details to create a website.");
 });
-      
+  
