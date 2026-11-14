@@ -1,1 +1,124 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080d1c"><title>STONIC — Website Studio</title><link rel="stylesheet" href="style.css"></head><body><div class="shell"><aside><a class="brand" href="#">S <span>STONIC<small>WEBSITE STUDIO</small></span></a><nav><a href="#builder">Website Builder</a><a href="#projects">My Projects</a><a href="#publishing">Publishing</a></nav><p id="connectionStatus">Checking connection</p></aside><main><header><div><small>YOUR CREATIVE WORKSPACE</small><h1>Website Studio</h1></div><button id="newProject" class="soft">＋ New project</button></header><section class="banner"><small>BUILD SOMETHING AMAZING</small><h2>Your next great website starts here.</h2><p>Generate, edit, preview and prepare websites for publishing.</p></section><section class="layout" id="builder"><div class="panel"><h2>01 · Website Details</h2><label>Website / Business Name<input id="projectName" placeholder="Bright Smile Dental"></label><label>Business Category<select id="businessType"><option>Dental Clinic</option><option>Restaurant</option><option>Real Estate</option><option>E-commerce</option><option>Agency</option><option>Hotel</option><option>Portfolio</option><option>Education</option><option>Other Business</option></select></label><label>Business Location<input id="businessLocation" placeholder="City, Country"></label><label>Describe Your Website<textarea id="websitePrompt" rows="5" placeholder="Describe business, customers, services, style and features..."></textarea></label><label>Brand Colour<input id="brandColor" type="color" value="#3978ff"></label><label>Design Style<select id="designStyle"><option>Modern Premium</option><option>Minimal</option><option>Luxury</option><option>Corporate</option><option>Creative</option></select></label><label>Template<select id="templateChoice"><option>Auto</option><option>Professional</option><option>Luxury</option><option>Modern</option></select></label><b>Website Sections</b><div class="checks"><label><input type="checkbox" name="sections" value="Services" checked>Services</label><label><input type="checkbox" name="sections" value="About" checked>About</label><label><input type="checkbox" name="sections" value="Team" checked>Team</label><label><input type="checkbox" name="sections" value="Gallery" checked>Gallery</label><label><input type="checkbox" name="sections" value="Reviews" checked>Reviews</label><label><input type="checkbox" name="sections" value="FAQ" checked>FAQ</label><label><input type="checkbox" name="sections" value="Contact" checked>Contact</label></div><button id="generate">✦ Generate Website with AI</button><p id="status">Ready.</p></div><div class="panel"><h2>02 · Website Preview</h2><div class="toolbar"><span id="previewStatus">NOT GENERATED</span><span><button id="desktopView" class="soft">Desktop</button><button id="mobileView" class="soft">Mobile</button></span></div><div id="canvasState" class="canvas"><h2 id="canvasTitle">Your website starts here</h2><p id="canvasDescription">Create your first website.</p></div><div class="actions"><button id="previewWebsite" disabled>Open Preview</button><button id="saveProject" class="soft">Save Project</button><button id="exportProject" class="soft">Export HTML</button></div><hr><h2>03 · Edit with Prompt</h2><p>Send repeated instructions to update the existing website.</p><textarea id="editPrompt" rows="4" placeholder="Example: Add a premium hero section and a booking button."></textarea><button id="applyPromptChanges" disabled>✦ Apply AI Changes</button><p id="editStatus">Generate or load a website first.</p><div id="historyList"></div><hr><section id="publishing"><h2>04 · Publishing</h2><p>Prepare and download your website. Automatic public URLs require a configured hosting provider.</p><button id="publishWebsite" disabled>Prepare Publish Package</button><button id="downloadPublish" class="soft" disabled>Download Website</button><p id="publishStatus">Create a website first.</p><a id="publishedLink" hidden>Open published website</a></section></div></section><section class="panel projects" id="projects"><h2>My Projects</h2><div id="projectList">No saved projects yet.</div></section><footer>© STONIC Website Studio</footer></main></div><script src="app.js" defer></script><script>if("serviceWorker"in navigator) addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));</script></body></html>
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d1c">
+<title>STONIC — Website Studio</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+<aside>
+<a class="brand" href="#">S <span>STONIC<small>WEBSITE STUDIO</small></span></a>
+<nav>
+<a href="#builder">Website Builder</a>
+<a href="#projects">My Projects</a>
+<a href="#publishing">Publishing</a>
+</nav>
+<p id="connectionStatus">Checking connection</p>
+</aside>
+
+<main>
+<header>
+<div><small>YOUR PRIVATE CREATIVE WORKSPACE</small><h1>Website Studio</h1></div>
+<button id="newProject" class="soft">＋ New project</button>
+</header>
+
+<section class="banner">
+<small>BUILD SOMETHING AMAZING</small>
+<h2>Your next great website starts here.</h2>
+<p>Generate, edit, preview and publish websites with STONIC AI.</p>
+</section>
+
+<section class="panel" id="apiSettings">
+<h2>AI Connection</h2>
+<p>Connect your Gemini API key once. STONIC will remember it on this device.</p>
+<label>Gemini API Key
+<input id="geminiApiKey" type="password" placeholder="Enter your Gemini API key" autocomplete="off">
+</label>
+<button id="connectGemini">Connect AI</button>
+<button id="disconnectGemini" class="soft" type="button">Disconnect</button>
+<p id="apiStatus">AI is not connected.</p>
+</section>
+
+<section class="layout" id="builder">
+<div class="panel">
+<h2>01 · Website Details</h2>
+<label>Website / Business Name<input id="projectName" placeholder="Bright Smile Dental"></label>
+<label>Business Category<select id="businessType">
+<option>Dental Clinic</option><option>Restaurant</option><option>Real Estate</option><option>E-commerce</option><option>Agency</option><option>Hotel</option><option>Portfolio</option><option>Education</option><option>Other Business</option>
+</select></label>
+<label>Business Location<input id="businessLocation" placeholder="City, Country"></label>
+<label>Describe Your Website<textarea id="websitePrompt" rows="5" placeholder="Describe business, customers, services, style and features..."></textarea></label>
+<label>Brand Colour<input id="brandColor" type="color" value="#3978ff"></label>
+<label>Design Style<select id="designStyle">
+<option>Modern Premium</option><option>Minimal</option><option>Luxury</option><option>Corporate</option><option>Creative</option>
+</select></label>
+<label>Template<select id="templateChoice">
+<option>Auto</option><option>Professional</option><option>Luxury</option><option>Modern</option>
+</select></label>
+<b>Website Sections</b>
+<div class="checks">
+<label><input type="checkbox" name="sections" value="Services" checked>Services</label>
+<label><input type="checkbox" name="sections" value="About" checked>About</label>
+<label><input type="checkbox" name="sections" value="Team" checked>Team</label>
+<label><input type="checkbox" name="sections" value="Gallery" checked>Gallery</label>
+<label><input type="checkbox" name="sections" value="Reviews" checked>Reviews</label>
+<label><input type="checkbox" name="sections" value="FAQ" checked>FAQ</label>
+<label><input type="checkbox" name="sections" value="Contact" checked>Contact</label>
+</div>
+<button id="generate">✦ Generate Website with AI</button>
+<p id="status">Ready.</p>
+</div>
+
+<div class="panel">
+<h2>02 · Website Preview</h2>
+<div class="toolbar">
+<span id="previewStatus">NOT GENERATED</span>
+<span><button id="desktopView" class="soft">Desktop</button><button id="mobileView" class="soft">Mobile</button></span>
+</div>
+<div id="canvasState" class="canvas">
+<h2 id="canvasTitle">Your website starts here</h2>
+<p id="canvasDescription">Create your first website.</p>
+</div>
+<div class="actions">
+<button id="previewWebsite" disabled>Open Preview</button>
+<button id="saveProject" class="soft">Save Project</button>
+<button id="exportProject" class="soft">Export HTML</button>
+</div>
+<hr>
+<h2>03 · Edit with Prompt</h2>
+<p>Keep improving your existing website. Each new instruction should preserve previous changes.</p>
+<textarea id="editPrompt" rows="4" placeholder="Example: Change the header colour but keep all previous sections and changes."></textarea>
+<button id="applyPromptChanges" disabled>✦ Apply AI Changes</button>
+<p id="editStatus">Generate or load a website first.</p>
+<div id="historyList"></div>
+<hr>
+<section id="publishing">
+<h2>04 · Publishing</h2>
+<p>Publish separate client websites through STONIC's GitHub Pages publishing system.</p>
+<button id="publishWebsite" disabled>Publish Website</button>
+<button id="downloadPublish" class="soft" disabled>Download Website</button>
+<p id="publishStatus">Create a website first.</p>
+<a id="publishedLink" hidden>Open published website</a>
+</section>
+</div>
+</section>
+
+<section class="panel projects" id="projects">
+<h2>My Projects</h2>
+<div id="projectList">No saved projects yet.</div>
+</section>
+<footer>© STONIC Website Studio</footer>
+</main>
+</div>
+<script src="app.js" defer></script>
+<script>
+if("serviceWorker" in navigator)
+addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+</script>
+</body>
+  </html>
+  
