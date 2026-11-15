@@ -1,0 +1,14 @@
+
+{
+  "id": "./",
+  "name": "STONIC Website Studio",
+  "short_name": "STONIC",
+  "description": "STONIC AI Website Builder",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1020",
+  "theme_color": "#0b1020",
+  "categories": ["productivity", "business"]
+}
