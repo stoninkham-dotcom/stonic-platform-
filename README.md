@@ -1,47 +1,67 @@
+
 # STONIC Platform
 
-STONIC is a mobile-friendly personal AI website creation workspace.
+STONIC is a mobile-friendly AI website-building platform.
 
-## Website Builder
+## Current Modules
 
-- Create website projects using business details and AI prompts.
-- Connect a Gemini API key.
-- Generate website content and layouts.
-- Edit existing websites using follow-up prompts.
-- Preview websites.
-- Save and manage projects.
-- Review edit history.
-- Restore previous versions.
-- Export website HTML.
-- Download a ZIP containing the standalone website HTML and a README file.
+- Website Builder
+- Gemini AI website generation
+- AI prompt-based website editing
+- Website preview
+- Local project saving
+- Version history
+- HTML export
+- ZIP export
+- Offline dashboard caching
 
-## AI Connection
+## Setup
 
-The Website Builder supports a Gemini API connection.
+1. Open the STONIC website.
+2. Enter your Gemini API key.
+3. Connect Gemini AI.
+4. Add your business details.
+5. Describe the website you want.
+6. Generate and preview your website.
+7. Save your project.
+8. Export the HTML or ZIP when ready.
 
-The API key is stored in the current browser's local storage. Use this only on a trusted personal device. Do not share your API key.
+## Storage
 
-## Project Storage
+Projects and the Gemini API key are stored in the browser's local storage on the device.
 
-Projects are stored locally in the browser. They are not automatically synced between devices. Clearing browser data may remove saved projects and settings.
+Clearing browser data may delete locally saved projects.
 
-## Client Delivery Status
+## Offline Support
 
-- Standalone HTML export: available in the current implementation.
-- ZIP download: available in the current implementation.
-- Automatic public website publishing: not connected yet.
-- Automatic GitHub Pages deployment: not connected yet.
-- Custom domain setup: requires hosting and DNS configuration.
+The service worker caches the main dashboard files.
 
-Do not treat a website as publicly published until its live URL has been verified.
+Offline access does not provide Gemini AI generation or online publishing.
 
-## Technology
+## Publishing Status
 
-- HTML
-- CSS
-- JavaScript
-- GitHub Pages
+Public client website publishing is not connected yet.
 
-## Development Status
+The Publish button does not deploy a website.
 
-STONIC is under active development. Features must be tested before being described as production-ready.
+A secure publishing integration is still required.
+
+## Important Security Note
+
+The Gemini API key is used by the browser to contact Google's API.
+
+Do not share your API key or publish it in a public repository.
+
+A production multi-user platform should use a secure server-side API connection.
+
+## Current Limitations
+
+- No visual drag-and-drop editor yet.
+- No secure public publishing integration yet.
+- Projects are stored locally on the current device and browser.
+- ZIP export currently contains the generated HTML and optional README only.
+- Generated websites may reference external assets that are not included in the ZIP.
+
+## Project
+
+STONIC Platform
