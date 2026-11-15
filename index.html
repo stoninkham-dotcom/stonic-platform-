@@ -15,7 +15,7 @@
 <nav>
 <a href="#builder">Website Builder</a>
 <a href="#projects">My Projects</a>
-<a href="#publishing">Publishing</a>
+<a href="#publishing">Client Delivery</a>
 </nav>
 <p id="connectionStatus">Checking connection</p>
 </aside>
@@ -27,14 +27,14 @@
 </header>
 
 <section class="banner">
-<small>BUILD SOMETHING AMAZING</small>
-<h2>Your next great website starts here.</h2>
-<p>Generate, edit, preview and publish websites with STONIC AI.</p>
+<small>STONIC BUSINESS WORKSPACE</small>
+<h2>Build. Improve. Deliver.</h2>
+<p>Create professional websites and prepare them for client delivery.</p>
 </section>
 
 <section class="panel" id="apiSettings">
 <h2>AI Connection</h2>
-<p>Connect your Gemini API key once. STONIC will remember it on this device.</p>
+<p>Connect your Gemini API key once on this device.</p>
 <label>Gemini API Key
 <input id="geminiApiKey" type="password" placeholder="Enter your Gemini API key" autocomplete="off">
 </label>
@@ -90,19 +90,49 @@
 </div>
 <hr>
 <h2>03 · Edit with Prompt</h2>
-<p>Keep improving your existing website. Each new instruction should preserve previous changes.</p>
-<textarea id="editPrompt" rows="4" placeholder="Example: Change the header colour but keep all previous sections and changes."></textarea>
+<p>Improve the current website while preserving approved changes.</p>
+<textarea id="editPrompt" rows="4" placeholder="Describe the exact changes you want..."></textarea>
 <button id="applyPromptChanges" disabled>✦ Apply AI Changes</button>
 <p id="editStatus">Generate or load a website first.</p>
 <div id="historyList"></div>
+
 <hr>
 <section id="publishing">
-<h2>04 · Publishing</h2>
-<p>Publish separate client websites through STONIC's GitHub Pages publishing system.</p>
-<button id="publishWebsite" disabled>Publish Website</button>
-<button id="downloadPublish" class="soft" disabled>Download Website</button>
-<p id="publishStatus">Create a website first.</p>
+<h2>04 · Client Delivery Studio</h2>
+<p>Prepare each client's website for its own public link and domain.</p>
+
+<label>Client / Project Name
+<input id="deliveryClientName" placeholder="Client business name">
+</label>
+
+<label>GitHub Repository Name
+<input id="deliveryRepoName" placeholder="client-business-website">
+</label>
+
+<label>Client Custom Domain (optional)
+<input id="deliveryDomain" placeholder="www.clientbusiness.com">
+</label>
+
+<div class="checks">
+<label><input id="deliveryIncludeAssets" type="checkbox" checked>Include website assets</label>
+<label><input id="deliveryIncludeReadme" type="checkbox" checked>Include delivery README</label>
+</div>
+
+<button id="publishWebsite" disabled>Publish Client Website</button>
+<button id="downloadPublish" class="soft" disabled>Download Complete Website ZIP</button>
+
+<p id="publishStatus">Create or load a website first.</p>
 <a id="publishedLink" hidden>Open published website</a>
+
+<hr>
+<h3>Delivery Checklist</h3>
+<ul id="deliveryChecklist">
+<li>Website ready</li>
+<li>Public link created</li>
+<li>Custom domain configured (if requested)</li>
+<li>Website files packaged</li>
+</ul>
+<p>Custom domains require domain-owner DNS configuration and GitHub Pages verification.</p>
 </section>
 </div>
 </section>
@@ -114,6 +144,7 @@
 <footer>© STONIC Website Studio</footer>
 </main>
 </div>
+
 <script src="app.js" defer></script>
 <script>
 if("serviceWorker" in navigator)
