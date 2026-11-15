@@ -1,19 +1,43 @@
-# STONIC Platform — Website Builder Foundation
 
-## Included
-- Mobile-friendly Website Builder dashboard
-- Business brief and prompt input
-- Structured website concept preview
-- Save/open/delete projects
-- Per-project edit history
-- Export a basic HTML preview
-- Chatbot Builder placeholder
+# STONIC Platform
 
-## How to run
-Deploy these files as a static website or open `index.html` in a modern browser.
+STONIC is a mobile-friendly AI website creation workspace.
 
-## Current limitations
-This is a front-end foundation, not a production AI website generator. Project data is saved in the current browser's local storage and is not yet synced to a cloud account. AI generation, user accounts, secure multi-client database, public publishing, custom domains, payments and real booking integrations are not included yet.
+## Website Builder
 
-## Future AI Agent integration
-Keep the UI separate from future backend services. Add authenticated APIs for project creation, project history, prompt-based edits, preview, publish/deploy, and chatbot embedding. Store secrets server-side only. Give the future AI Agent permission-scoped API access rather than direct unrestricted database access.
+- Create website projects using business details and AI prompts.
+- Connect a Gemini API key.
+- Generate website content and layouts.
+- Edit existing websites using follow-up prompts.
+- Preview websites.
+- Save and manage projects.
+- Review edit history.
+- Restore previous versions.
+- Export website HTML.
+
+## AI Connection
+
+The Website Builder supports a Gemini API connection.
+
+The API key is stored in the current browser's local storage. Use this only on a trusted personal device. Do not share your API key.
+
+## Publishing
+
+Public client website publishing through GitHub Pages is planned but is not yet fully implemented.
+
+## Project Storage
+
+Projects are currently stored locally in the browser. They are not automatically synced between devices.
+
+## Technology
+
+- HTML
+- CSS
+- JavaScript
+- GitHub Pages
+
+## Current Development Status
+
+This project is under active development.
+
+Features must be tested before being described as production-ready.
