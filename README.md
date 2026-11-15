@@ -1,7 +1,6 @@
-
 # STONIC Platform
 
-STONIC is a mobile-friendly AI website creation workspace.
+STONIC is a mobile-friendly personal AI website creation workspace.
 
 ## Website Builder
 
@@ -14,6 +13,7 @@ STONIC is a mobile-friendly AI website creation workspace.
 - Review edit history.
 - Restore previous versions.
 - Export website HTML.
+- Download a ZIP containing the standalone website HTML and a README file.
 
 ## AI Connection
 
@@ -21,13 +21,19 @@ The Website Builder supports a Gemini API connection.
 
 The API key is stored in the current browser's local storage. Use this only on a trusted personal device. Do not share your API key.
 
-## Publishing
-
-Public client website publishing through GitHub Pages is planned but is not yet fully implemented.
-
 ## Project Storage
 
-Projects are currently stored locally in the browser. They are not automatically synced between devices.
+Projects are stored locally in the browser. They are not automatically synced between devices. Clearing browser data may remove saved projects and settings.
+
+## Client Delivery Status
+
+- Standalone HTML export: available in the current implementation.
+- ZIP download: available in the current implementation.
+- Automatic public website publishing: not connected yet.
+- Automatic GitHub Pages deployment: not connected yet.
+- Custom domain setup: requires hosting and DNS configuration.
+
+Do not treat a website as publicly published until its live URL has been verified.
 
 ## Technology
 
@@ -36,8 +42,6 @@ Projects are currently stored locally in the browser. They are not automatically
 - JavaScript
 - GitHub Pages
 
-## Current Development Status
+## Development Status
 
-This project is under active development.
-
-Features must be tested before being described as production-ready.
+STONIC is under active development. Features must be tested before being described as production-ready.
