@@ -1,101 +1,79 @@
 
-"use strict";
-
-const CACHE_NAME = "stonic-platform-v6";
+const CACHE_NAME = "stonic-website-builder-v4";
 
 const APP_FILES = [
   "./",
   "./index.html",
   "./style.css",
-  "./app.js"
+  "./app.js",
+  "./editor.js",
+  "./manifest.webmanifest"
 ];
 
-// Install: cache the app files.
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_FILES))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(APP_FILES)
+    )
   );
+
+  self.skipWaiting();
 });
 
-// Activate: remove older STONIC caches.
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys()
-      .then(names =>
-        Promise.all(
-          names
-            .filter(name =>
-              name.startsWith("stonic-platform-") &&
-              name !== CACHE_NAME
-            )
-            .map(name => caches.delete(name))
-        )
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
       )
-      .then(() => self.clients.claim())
+    )
   );
+
+  self.clients.claim();
 });
 
-// Fetch: use network first, then cached app files.
 self.addEventListener("fetch", event => {
   const request = event.request;
+
+  if (request.method !== "GET") return;
+
   const url = new URL(request.url);
 
-  // Only handle same-origin GET requests.
-  if (
-    request.method !== "GET" ||
-    url.origin !== self.location.origin
-  ) {
-    return;
-  }
+  // Never cache Gemini API requests.
+  if (url.hostname.includes("googleapis.com")) return;
 
-  // HTML navigation: try network, then cached dashboard.
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response.ok) {
-            const copy = response.clone();
+  // Only handle this app's own files.
+  if (url.origin !== self.location.origin) return;
 
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put("./index.html", copy));
-
-          }
-
-          return response;
-        })
-        .catch(async () => {
-          return (
-            await caches.match(request) ||
-            await caches.match("./index.html") ||
-            Response.error()
-          );
-        })
-    );
-
-    return;
-  }
-
-  // App assets: network first, cached fallback.
   event.respondWith(
     fetch(request)
       .then(response => {
-        if (response.ok) {
+        if (response && response.ok) {
           const copy = response.clone();
 
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(request, copy));
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, copy);
+          });
         }
 
         return response;
       })
       .catch(async () => {
-        return (
-          await caches.match(request) ||
-          Response.error()
-        );
+        const cached = await caches.match(request);
+
+        if (cached) return cached;
+
+        if (request.mode === "navigate") {
+          return caches.match("./index.html");
+        }
+
+        return new Response("Offline: file not available.", {
+          status: 503,
+          headers: { "Content-Type": "text/plain" }
+        });
       })
   );
 });
-                      
+  
