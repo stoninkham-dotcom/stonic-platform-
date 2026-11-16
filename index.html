@@ -5,27 +5,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080d1c">
-  <meta name="description" content="STONIC — AI Website Builder and Client Delivery Studio">
+  <meta name="description" content="STONIC AI Website Builder">
   <link rel="manifest" href="manifest.webmanifest">
-  <title>STONIC — Website Studio</title>
+  <title>STONIC — Website Builder</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="shell">
-
   <aside class="sidebar">
     <a class="brand" href="#">
       <span class="brand-icon">S</span>
-      <span>STONIC<small>WEBSITE STUDIO</small></span>
+      <span>STONIC<small>WEBSITE BUILDER</small></span>
     </a>
-
     <nav>
       <a href="#builder">Website Builder</a>
       <a href="#projects">My Projects</a>
       <a href="#publishing">Client Publishing</a>
       <a href="#apiSettings">AI Settings</a>
     </nav>
-
     <p id="connectionStatus">Checking connection...</p>
   </aside>
 
@@ -33,48 +30,36 @@
     <header>
       <div>
         <small>YOUR CREATIVE WORKSPACE</small>
-        <h1>Website Studio</h1>
+        <h1>Website Builder</h1>
       </div>
-      <button id="newProject" class="soft">＋ New Project</button>
+      <button id="newProject" class="soft" type="button">＋ New Project</button>
     </header>
 
     <section class="banner">
-      <small>STONIC WEBSITE BUILDER</small>
-      <h2>Build. Customize. Publish.</h2>
-      <p>Create professional websites and prepare them for client delivery.</p>
+      <small>STONIC AI WEBSITE BUILDER</small>
+      <h2>Build. Customize. Preview.</h2>
+      <p>Generate complete professional websites from your prompts.</p>
     </section>
 
-    <!-- AI CONNECTION -->
     <section class="panel" id="apiSettings">
-      <h2>AI Connection</h2>
-      <p>Connect your Gemini API key to generate and edit websites.</p>
-
+      <h2>Gemini AI Connection</h2>
+      <p>Connect your Gemini API key once on this browser.</p>
       <label for="geminiApiKey">Gemini API Key</label>
-      <input
-        id="geminiApiKey"
-        type="password"
-        placeholder="Enter Gemini API key"
-        autocomplete="off"
-      >
-
+      <input id="geminiApiKey" type="password"
+        placeholder="Enter Gemini API key" autocomplete="off">
       <div class="actions">
-        <button id="connectGemini">Connect AI</button>
-        <button id="disconnectGemini" class="soft" type="button">
-          Disconnect
-        </button>
+        <button id="connectGemini" type="button">Connect Gemini</button>
+        <button id="disconnectGemini" class="soft" type="button">Disconnect</button>
       </div>
-
-      <p id="apiStatus">AI is not connected.</p>
+      <p id="apiStatus">Gemini is not connected.</p>
     </section>
 
-    <!-- WEBSITE BUILDER -->
     <section class="layout" id="builder">
-
       <div class="panel">
         <h2>01 · Website Details</h2>
 
         <label for="projectName">Website / Business Name</label>
-        <input id="projectName" placeholder="Bright Smile Dental">
+        <input id="projectName" placeholder="Business name">
 
         <label for="businessType">Business Category</label>
         <select id="businessType">
@@ -92,12 +77,9 @@
         <label for="businessLocation">Business Location</label>
         <input id="businessLocation" placeholder="City, Country">
 
-        <label for="websitePrompt">Describe Your Website</label>
-        <textarea
-          id="websitePrompt"
-          rows="5"
-          placeholder="Describe the business, target customers, services, design and features..."
-        ></textarea>
+        <label for="websitePrompt">Website Requirements</label>
+        <textarea id="websitePrompt" rows="7"
+          placeholder="Describe the client's business, audience, services, pages, features and design requirements..."></textarea>
 
         <label for="brandColor">Brand Colour</label>
         <input id="brandColor" type="color" value="#3978ff">
@@ -111,14 +93,6 @@
           <option>Creative</option>
         </select>
 
-        <label for="templateChoice">Template</label>
-        <select id="templateChoice">
-          <option>Auto</option>
-          <option>Professional</option>
-          <option>Luxury</option>
-          <option>Modern</option>
-        </select>
-
         <h3>Website Sections</h3>
         <div class="checks">
           <label><input type="checkbox" name="sections" value="Services" checked> Services</label>
@@ -130,163 +104,79 @@
           <label><input type="checkbox" name="sections" value="Contact" checked> Contact</label>
         </div>
 
-        <button id="generate" class="primary">
-          ✦ Generate Website with AI
+        <button id="generate" class="primary" type="button">
+          ✦ Generate Complete Website
         </button>
         <p id="status">Ready to create your website.</p>
       </div>
 
-      <!-- LIVE PREVIEW -->
       <div class="panel">
         <h2>02 · Website Preview</h2>
-
         <div class="toolbar">
           <span id="previewStatus">NOT GENERATED</span>
           <div>
-            <button id="desktopView" class="soft">Desktop</button>
-            <button id="mobileView" class="soft">Mobile</button>
+            <button id="desktopView" class="soft" type="button">Desktop</button>
+            <button id="mobileView" class="soft" type="button">Mobile</button>
           </div>
         </div>
 
         <div id="canvasState" class="canvas">
           <h2>Your website starts here</h2>
-          <p>Create your first website using STONIC AI.</p>
+          <p>Generate your first website with STONIC AI.</p>
         </div>
 
         <div class="actions">
-          <button id="previewWebsite" disabled>Open Preview</button>
-          <button id="saveProject" class="soft">Save Project</button>
-          <button id="exportProject" class="soft">Export HTML</button>
+          <button id="previewWebsite" type="button" disabled>Open Preview in New Tab</button>
+          <button id="saveProject" class="soft" type="button">Save Project</button>
+          <button id="exportProject" class="soft" type="button">Export HTML</button>
         </div>
 
         <hr>
 
-        <!-- AI EDITOR -->
-        <h2>03 · Edit with AI</h2>
-        <p>Describe changes. STONIC AI should preserve your approved design.</p>
-
-        <label for="editPrompt">What would you like to change?</label>
-        <textarea
-          id="editPrompt"
-          rows="4"
-          placeholder="Example: Change the hero section background and add a pricing section..."
-        ></textarea>
-
-        <button id="applyPromptChanges" disabled>
-          ✦ Apply AI Changes
+        <h2>03 · Edit with Prompt</h2>
+        <p>Request changes to the existing website. Previous approved work should be preserved.</p>
+        <label for="editPrompt">Describe the changes</label>
+        <textarea id="editPrompt" rows="5"
+          placeholder="Example: Redesign the hero section, add a pricing section, change the colours..."></textarea>
+        <button id="applyPromptChanges" type="button" disabled>
+          ✦ Apply Changes
         </button>
-
         <p id="editStatus">Generate or load a website first.</p>
-
         <div id="historyList"></div>
-
-        <hr>
-
-        <!-- CLIENT PUBLISHING -->
-        <section id="publishing">
-          <h2>04 · Client Publishing Studio</h2>
-          <p>Prepare a separate public website for each client.</p>
-
-          <label for="deliveryClientName">Client / Project Name</label>
-          <input
-            id="deliveryClientName"
-            placeholder="Client business name"
-          >
-
-          <label for="deliveryRepoName">Website Project ID</label>
-          <input
-            id="deliveryRepoName"
-            placeholder="client-business-website"
-          >
-
-          <label for="deliveryDomain">Custom Domain (Optional)</label>
-          <input
-            id="deliveryDomain"
-            placeholder="www.clientbusiness.com"
-          >
-
-          <label for="deliveryBranch">Publishing Branch</label>
-          <select id="deliveryBranch">
-            <option value="gh-pages">gh-pages</option>
-            <option value="main">main</option>
-          </select>
-
-          <div class="checks">
-            <label>
-              <input id="deliveryIncludeAssets" type="checkbox" checked>
-              Include website assets
-            </label>
-            <label>
-              <input id="deliveryIncludeReadme" type="checkbox" checked>
-              Include README
-            </label>
-          </div>
-
-          <div class="actions">
-            <button id="publishWebsite" disabled>
-              Publish Client Website
-            </button>
-            <button id="downloadPublish" class="soft" disabled>
-              Download Website ZIP
-            </button>
-          </div>
-
-          <p id="publishStatus">
-            Create or load a website before publishing.
-          </p>
-
-          <div id="publishResult" hidden>
-            <h3>Website Publishing Result</h3>
-            <a id="publishedLink" target="_blank" rel="noopener noreferrer">
-              Open Public Website
-            </a>
-            <p id="publishedUrl"></p>
-          </div>
-
-          <hr>
-
-          <h3>Client Delivery Checklist</h3>
-          <ul id="deliveryChecklist">
-            <li>Website generated</li>
-            <li>Website preview checked</li>
-            <li>Website files prepared</li>
-            <li>Public URL verified</li>
-            <li>Client delivery completed</li>
-          </ul>
-
-          <p>
-            A website is not considered published until its public URL
-            has been opened and verified successfully.
-          </p>
-        </section>
       </div>
     </section>
 
-    <!-- PROJECTS -->
     <section class="panel projects" id="projects">
       <h2>My Projects</h2>
       <div id="projectList">No saved projects yet.</div>
     </section>
 
-    <footer>
-      © STONIC Website Studio
-    </footer>
+    <section class="panel" id="publishing">
+      <h2>Client Publishing</h2>
+      <p>Public publishing system will be connected in the next phase.</p>
+      <p id="publishStatus">Publishing is not connected yet. No public website has been deployed.</p>
+      <button id="publishWebsite" type="button" disabled>Publish Client Website</button>
+      <button id="downloadPublish" class="soft" type="button" disabled>Download Website ZIP</button>
+      <div id="publishResult" hidden>
+        <a id="publishedLink" target="_blank" rel="noopener noreferrer">Open Public Website</a>
+        <p id="publishedUrl"></p>
+      </div>
+    </section>
+
+    <footer>© STONIC Website Builder</footer>
   </main>
 </div>
 
-<!-- STONIC MODULES -->
-<script src="templates.js" defer></script>
 <script src="editor.js" defer></script>
 <script src="app.js" defer></script>
-
 <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./service-worker.js")
-        .catch(error => console.error("Service worker:", error));
-    });
-  }
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .catch(error => console.error("Service worker:", error));
+  });
+}
 </script>
 </body>
-</html>
+          </html>
+          
