@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = id => document.getElementById(id);
 
-  const PROJECT_KEY = "stonic_projects_v6";
+  const PROJECT_KEY = "stonic_projects_v7";
   const API_KEY = "stonic_gemini_key";
   const MODEL = "gemini-2.5-flash";
 
@@ -20,8 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "businessLocation",
     "websitePrompt",
     "brandColor",
-    "designStyle",
-    "templateChoice"
+    "designStyle"
   ];
 
   const fields = Object.fromEntries(
@@ -29,8 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   const setText = (id, value) => {
-    if ($(id)) $(id).textContent = value;
+    const element = $(id);
+    if (element) element.textContent = value;
   };
+
+  const getApiKey = () => localStorage.getItem(API_KEY) || "";
 
   const getSections = () =>
     [...document.querySelectorAll('[name="sections"]:checked')]
@@ -43,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
     prompt: fields.websitePrompt.value.trim(),
     color: fields.brandColor.value,
     style: fields.designStyle.value,
-    template: fields.templateChoice.value,
     sections: getSections()
   });
 
@@ -51,18 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
     (value || "website")
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/^-|-$/g, "") || "website";
 
   function getProjects() {
     try {
-      return JSON.parse(localStorage.getItem(PROJECT_KEY) || "[]");
+      const data = JSON.parse(localStorage.getItem(PROJECT_KEY) || "[]");
+      return Array.isArray(data) ? data : [];
     } catch {
       return [];
     }
-  }
-
-  function getApiKey() {
-    return localStorage.getItem(API_KEY) || "";
   }
 
   function updateConnection(message) {
@@ -73,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // GEMINI API
+  // GEMINI CONNECTION
 
   async function geminiRequest(key, prompt, systemInstruction) {
     const endpoint =
@@ -87,14 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       body: JSON.stringify({
         systemInstruction: {
-          parts: [{ text: systemInstruction || "You are STONIC AI." }]
+          parts: [{ text: systemInstruction }]
         },
         contents: [{
           role: "user",
           parts: [{ text: prompt }]
         }],
         generationConfig: {
-          temperature: 0.6,
+          temperature: 0.65,
           maxOutputTokens: 16000
         }
       })
@@ -103,12 +101,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        data.error?.message || "Gemini request failed."
-      );
+      throw new Error(data.error?.message || "Gemini request failed.");
     }
 
-    const result = (data.candidates?.[0]?.content?.parts || [])
+    const candidate = data.candidates?.[0];
+
+    if (candidate?.finishReason === "MAX_TOKENS") {
+      throw new Error("Gemini response was cut off. Try a shorter request.");
+    }
+
+    const result = (candidate?.content?.parts || [])
       .map(part => part.text || "")
       .join("")
       .trim();
@@ -124,6 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function connectGemini() {
+    if (busy) return;
+
     const key = $("geminiApiKey").value.trim();
 
     if (!key) {
@@ -138,13 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
       await geminiRequest(
         key,
         "Reply exactly: STONIC CONNECTED",
-        "You are a connection test. Reply with the requested text."
+        "You are a connection test. Reply with the requested text only."
       );
 
       localStorage.setItem(API_KEY, key);
       $("geminiApiKey").value = "";
 
-      updateConnection("Gemini connected successfully on this device.");
+      updateConnection("Gemini connected. Key saved on this device.");
     } catch (error) {
       updateConnection("Connection failed: " + error.message);
       alert(error.message);
@@ -154,11 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function disconnectGemini() {
-    if (!confirm("Disconnect Gemini AI on this device?")) return;
+    if (!confirm("Disconnect Gemini on this device?")) return;
 
     localStorage.removeItem(API_KEY);
     $("geminiApiKey").value = "";
-
     updateConnection("Gemini disconnected.");
   }
 
@@ -166,19 +169,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const key = getApiKey();
 
     if (!key) {
-      throw new Error("Connect Gemini AI first.");
+      throw new Error("Connect Gemini first in AI Settings.");
     }
 
     return geminiRequest(
       key,
       prompt,
       [
-        "You are STONIC, a professional website-building AI.",
-        "Return only a complete standalone HTML document.",
-        "Use embedded CSS and JavaScript.",
-        "Create responsive, accessible professional websites.",
-        "Do not invent real contact details, business claims or testimonials.",
-        "Preserve existing working features when editing websites."
+        "You are STONIC, a professional AI website developer.",
+        "Return only one complete standalone HTML document.",
+        "Include all CSS and JavaScript inside that HTML document.",
+        "Do not use external templates or prebuilt template systems.",
+        "Build the website from the user's actual requirements.",
+        "Make it responsive for mobile, tablet and desktop.",
+        "Use semantic HTML, accessible controls and clean design.",
+        "Do not invent real contact details, claims or testimonials.",
+        "Use clearly labelled placeholders for missing business information.",
+        "When editing, preserve all unrelated existing sections and functionality.",
+        "Do not remove previous approved changes unless explicitly requested."
       ].join(" ")
     );
   }
@@ -190,10 +198,12 @@ document.addEventListener("DOMContentLoaded", () => {
       typeof value !== "string" ||
       !/<html[\s>]/i.test(value) ||
       !/<\/html>/i.test(value) ||
+      !/<body[\s>]/i.test(value) ||
+      !/<\/body>/i.test(value) ||
       value.length > 500000
     ) {
       throw new Error(
-        "The generated HTML is incomplete or invalid. Previous website was preserved."
+        "Generated website is incomplete or invalid. Previous version was preserved."
       );
     }
 
@@ -212,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const projects = getProjects();
     const index = projects.findIndex(item => item.id === project.id);
 
-    if (index === -1) {
+    if (index < 0) {
       projects.unshift(project);
     } else {
       projects[index] = project;
@@ -224,10 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         JSON.stringify(projects.slice(0, 30))
       );
     } catch {
-      setText(
-        "status",
-        "Storage is full. Export your website before continuing."
-      );
+      setText("status", "Device storage is full. Export your website.");
       return false;
     }
 
@@ -259,22 +266,31 @@ document.addEventListener("DOMContentLoaded", () => {
       title.textContent = item.name || "Untitled website";
 
       const open = document.createElement("button");
+      open.type = "button";
       open.textContent = "Open";
       open.onclick = () => loadProject(item);
 
       const remove = document.createElement("button");
+      remove.type = "button";
       remove.textContent = "Delete";
       remove.className = "soft";
 
       remove.onclick = () => {
         if (!confirm("Delete this saved project?")) return;
 
-        localStorage.setItem(
-          PROJECT_KEY,
-          JSON.stringify(
-            getProjects().filter(project => project.id !== item.id)
-          )
+        const remaining = getProjects().filter(
+          saved => saved.id !== item.id
         );
+
+        localStorage.setItem(PROJECT_KEY, JSON.stringify(remaining));
+
+        if (project?.id === item.id) {
+          project = null;
+          html = "";
+          history = [];
+          render();
+          renderHistory();
+        }
 
         renderProjects();
       };
@@ -287,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadProject(item) {
     project = { ...item };
     html = item.html || "";
-    history = item.history || [];
+    history = Array.isArray(item.history) ? item.history : [];
 
     const mapping = {
       projectName: "name",
@@ -295,13 +311,11 @@ document.addEventListener("DOMContentLoaded", () => {
       businessLocation: "location",
       websitePrompt: "prompt",
       brandColor: "color",
-      designStyle: "style",
-      templateChoice: "template"
+      designStyle: "style"
     };
 
     fieldIds.forEach(id => {
       const value = item[mapping[id]];
-
       if (fields[id] && value != null) {
         fields[id].value = value;
       }
@@ -315,6 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderHistory();
 
     setText("status", "Project loaded successfully.");
+    setText("editStatus", "You can now edit this website.");
   }
 
   // PREVIEW
@@ -328,28 +343,21 @@ document.addEventListener("DOMContentLoaded", () => {
       heading.textContent = "Your website starts here";
 
       const description = document.createElement("p");
-      description.textContent = "Create your first website.";
+      description.textContent = "Generate your first website with STONIC AI.";
 
       box.append(heading, description);
 
       setText("previewStatus", "NOT GENERATED");
-
-      [
-        "previewWebsite",
-        "applyPromptChanges",
-        "publishWebsite",
-        "downloadPublish"
-      ].forEach(id => {
-        if ($(id)) $(id).disabled = true;
-      });
-
+      $("previewWebsite").disabled = true;
+      $("applyPromptChanges").disabled = true;
+      $("downloadPublish").disabled = true;
+      $("publishWebsite").disabled = true;
       return;
     }
 
     const frame = document.createElement("iframe");
-
     frame.title = "STONIC website preview";
-    frame.sandbox = "allow-scripts allow-forms";
+    frame.setAttribute("sandbox", "allow-scripts allow-forms");
     frame.style.width = mode === "mobile" ? "375px" : "100%";
     frame.style.maxWidth = "100%";
     frame.style.minHeight = "620px";
@@ -358,15 +366,27 @@ document.addEventListener("DOMContentLoaded", () => {
     box.append(frame);
 
     setText("previewStatus", "PREVIEW READY");
+    $("previewWebsite").disabled = false;
+    $("applyPromptChanges").disabled = false;
+    $("downloadPublish").disabled = false;
 
-    [
-      "previewWebsite",
-      "applyPromptChanges",
-      "publishWebsite",
-      "downloadPublish"
-    ].forEach(id => {
-      if ($(id)) $(id).disabled = false;
-    });
+    // Publishing remains disabled until the publishing backend is added.
+    $("publishWebsite").disabled = true;
+  }
+
+  function openPreview() {
+    if (!html) return;
+
+    const win = window.open("", "_blank");
+
+    if (!win) {
+      alert("Allow pop-ups to open the preview in a new tab.");
+      return;
+    }
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
   }
 
   // VERSION HISTORY
@@ -377,9 +397,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     history.forEach((version, index) => {
       const button = document.createElement("button");
-
+      button.type = "button";
       button.className = "soft";
-      button.textContent = "Restore version " + (index + 1);
+
+      const date = version.at
+        ? new Date(version.at).toLocaleString()
+        : "Previous version";
+
+      button.textContent = `Restore version ${index + 1} · ${date}`;
 
       button.onclick = () => {
         if (!confirm("Restore this previous version?")) return;
@@ -393,8 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
           html: current,
           at: new Date().toISOString()
         });
-
-        history = history.slice(0, 8);
 
         render();
         saveProject();
@@ -410,14 +433,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function commitWebsite(nextHTML, message) {
     nextHTML = validateHTML(nextHTML);
 
-    if (html) {
+    const previousHTML = html;
+
+    if (previousHTML) {
       history.unshift({
-        html,
+        html: previousHTML,
         at: new Date().toISOString()
       });
     }
 
-    history = history.slice(0, 8);
     html = nextHTML;
 
     if (!project) {
@@ -431,13 +455,16 @@ document.addEventListener("DOMContentLoaded", () => {
     project.history = history;
 
     render();
-    saveProject(true);
+    const saved = saveProject(true);
     renderHistory();
 
-    setText("editStatus", message);
+    setText(
+      "editStatus",
+      saved ? message : message + " Please export a backup; device storage failed."
+    );
   }
 
-  // GENERATE WEBSITE
+  // GENERATE COMPLETE WEBSITE
 
   async function generateWebsite() {
     if (busy) return;
@@ -445,32 +472,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const data = getData();
 
     if (!data.name || !data.prompt) {
-      alert("Enter the business name and website description.");
+      alert("Enter the business name and website requirements.");
       return;
     }
 
     if (!getApiKey()) {
-      alert("Connect Gemini AI first.");
+      alert("Connect Gemini first.");
       return;
     }
 
     busy = true;
     $("generate").disabled = true;
-
-    setText("status", "STONIC AI is generating your website...");
+    setText("status", "STONIC AI is creating your website...");
 
     try {
       const prompt = [
-        "Create a complete professional responsive business website.",
+        "Build a complete professional website from scratch. Do not use a template.",
         "Business name: " + data.name,
         "Business category: " + data.type,
         "Location: " + (data.location || "Not supplied"),
         "Design style: " + data.style,
         "Brand colour: " + data.color,
-        "Template: " + data.template,
         "Required sections: " + data.sections.join(", "),
-        "Business requirements: " + data.prompt,
-        "Use realistic placeholder content where information is missing.",
+        "Client requirements: " + data.prompt,
+        "Create a polished layout with navigation, hero section, suitable content,",
+        "responsive styling and working page interactions where appropriate.",
+        "Do not invent real business contact details or testimonials.",
         "Return a complete standalone HTML document only."
       ].join("\n");
 
@@ -485,7 +512,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       commitWebsite(
         result,
-        "Website generated. You can now edit it with AI."
+        "Website generated. You can now edit it with prompts."
       );
 
       setText("status", "Website generated successfully.");
@@ -498,7 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // EDIT EXISTING WEBSITE
+  // EDIT EXISTING WEBSITE WITH PROMPTS
 
   async function editWebsite() {
     if (busy || !html) return;
@@ -511,35 +538,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!getApiKey()) {
-      alert("Connect Gemini AI first.");
+      alert("Connect Gemini first.");
       return;
     }
 
     busy = true;
     $("applyPromptChanges").disabled = true;
-
-    setText("editStatus", "STONIC AI is updating your website...");
+    setText("editStatus", "STONIC AI is updating your existing website...");
 
     try {
-      const result = await askGemini(
-        [
-          "Edit the existing website below.",
-          "Apply only the new requested changes.",
-          "Preserve previous approved changes.",
-          "Do not remove unrelated sections or working features.",
-          "Return the complete updated HTML.",
-          "",
-          "NEW REQUEST:",
-          prompt,
-          "",
-          "CURRENT WEBSITE:",
-          html
-        ].join("\n")
-      );
+      const result = await askGemini([
+        "Update the existing website according to the new request.",
+        "This is an existing client website. Do not rebuild it from scratch.",
+        "Apply the requested changes while preserving all previous approved work.",
+        "Preserve unrelated sections, layout, content and working features.",
+        "Do not remove existing functionality unless explicitly requested.",
+        "Return the complete updated standalone HTML document.",
+        "",
+        "NEW CHANGE REQUEST:",
+        prompt,
+        "",
+        "CURRENT WEBSITE HTML:",
+        html
+      ].join("\n"));
 
       commitWebsite(
         result,
-        "Changes saved. You can restore an earlier version."
+        "Changes applied and saved. You can submit another prompt."
       );
 
       $("editPrompt").value = "";
@@ -554,7 +579,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ZIP CREATION
+  // HTML DOWNLOAD
+
+  function downloadHTML() {
+    if (!html) return;
+
+    const url = URL.createObjectURL(
+      new Blob([html], { type: "text/html;charset=utf-8" })
+    );
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = slug(project?.name) + ".html";
+    link.click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  // ZIP DOWNLOAD
 
   function crc32(bytes) {
     let crc = -1;
@@ -572,32 +614,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function zipBlob(files) {
     const encoder = new TextEncoder();
-
     const localParts = [];
     const centralParts = [];
-
     let offset = 0;
 
-    const u16 = n => [
-      n & 255,
-      (n >>> 8) & 255
-    ];
-
-    const u32 = n => [
-      ...u16(n & 65535),
-      ...u16(n >>> 16)
-    ];
+    const u16 = n => [n & 255, (n >>> 8) & 255];
+    const u32 = n => [...u16(n & 65535), ...u16(n >>> 16)];
 
     files.forEach(file => {
       const name = encoder.encode(file.name);
       const data = encoder.encode(file.content);
       const crc = crc32(data);
 
-      const localHeader = new Uint8Array([
+      const local = new Uint8Array([
         0x50, 0x4b, 3, 4,
         20, 0, 0, 0,
         0, 0, 0, 0,
-        0, 0,
         ...u32(crc),
         ...u32(data.length),
         ...u32(data.length),
@@ -606,9 +638,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ...name
       ]);
 
-      localParts.push(localHeader, data);
+      localParts.push(local, data);
 
-      const centralHeader = new Uint8Array([
+      const central = new Uint8Array([
         0x50, 0x4b, 1, 2,
         20, 0, 20, 0,
         0, 0, 0, 0,
@@ -625,17 +657,15 @@ document.addEventListener("DOMContentLoaded", () => {
         ...name
       ]);
 
-      centralParts.push(centralHeader);
-
-      offset += localHeader.length + data.length;
+      centralParts.push(central);
+      offset += local.length + data.length;
     });
 
     const centralSize = centralParts.reduce(
-      (total, part) => total + part.length,
-      0
+      (sum, part) => sum + part.length, 0
     );
 
-    const endRecord = new Uint8Array([
+    const end = new Uint8Array([
       0x50, 0x4b, 5, 6,
       0, 0, 0, 0,
       ...u16(files.length),
@@ -646,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
 
     return new Blob(
-      [...localParts, ...centralParts, endRecord],
+      [...localParts, ...centralParts, end],
       { type: "application/zip" }
     );
   }
@@ -654,97 +684,70 @@ document.addEventListener("DOMContentLoaded", () => {
   function downloadZIP() {
     if (!html) return;
 
-    const clientName = slug(
-      $("deliveryClientName").value || project?.name
-    );
-
     const files = [
+      { name: "index.html", content: html },
       {
-        name: "index.html",
-        content: html
+        name: "README.txt",
+        content: "Website generated with STONIC Website Builder."
       }
     ];
-
-    if ($("deliveryIncludeReadme").checked) {
-      files.push({
-        name: "README.txt",
-        content:
-          "STONIC CLIENT WEBSITE\n\n" +
-          "Website files are included in this ZIP.\n" +
-          "Upload this folder to a supported static hosting service " +
-          "to make the website publicly accessible.\n"
-      });
-    }
 
     const url = URL.createObjectURL(zipBlob(files));
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = clientName + "-website.zip";
+    link.download = slug(project?.name) + "-website.zip";
     link.click();
 
     setTimeout(() => URL.revokeObjectURL(url), 2000);
 
     setText(
       "publishStatus",
-      "Website ZIP downloaded. It has not been publicly published."
+      "ZIP downloaded. This website has not been publicly published."
     );
   }
 
-  function downloadHTML() {
-    if (!html) return;
+  // NEW PROJECT
 
-    const url = URL.createObjectURL(
-      new Blob([html], { type: "text/html" })
-    );
-
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = slug(project?.name) + ".html";
-    link.click();
-
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
-  }
-
-  // CLIENT PUBLISHING
-  // Actual public deployment will be connected in the publishing integration step.
-
-  function publishWebsite() {
-    setText(
-      "publishStatus",
-      "Public publishing is not connected yet. No live website has been deployed."
-    );
-  }
-
-  // BUTTON EVENTS
-
-  $("connectGemini").addEventListener("click", connectGemini);
-  $("disconnectGemini").addEventListener("click", disconnectGemini);
-
-  $("generate").addEventListener("click", generateWebsite);
-  $("applyPromptChanges").addEventListener("click", editWebsite);
-
-  $("saveProject").addEventListener("click", () => saveProject());
-  $("exportProject").addEventListener("click", downloadHTML);
-  $("downloadPublish").addEventListener("click", downloadZIP);
-
-  $("publishWebsite").addEventListener("click", publishWebsite);
-
-  $("previewWebsite").addEventListener("click", () => {
-    if (!html) return;
-
-    const win = window.open("", "_blank");
-
-    if (!win) {
-      alert("Allow pop-ups to open the website preview.");
+  function newProject() {
+    if (!confirm("Start a new project? Saved projects will remain.")) {
       return;
     }
 
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
-  });
+    html = "";
+    project = null;
+    history = [];
+
+    fields.projectName.value = "";
+    fields.businessType.selectedIndex = 0;
+    fields.businessLocation.value = "";
+    fields.websitePrompt.value = "";
+    fields.brandColor.value = "#3978ff";
+    fields.designStyle.selectedIndex = 0;
+
+    document.querySelectorAll('[name="sections"]')
+      .forEach(box => box.checked = true);
+
+    $("editPrompt").value = "";
+
+    render();
+    renderHistory();
+
+    setText("status", "New project ready.");
+    setText("editStatus", "Generate or load a website first.");
+  }
+
+  // EVENTS
+
+  $("connectGemini").addEventListener("click", connectGemini);
+  $("disconnectGemini").addEventListener("click", disconnectGemini);
+  $("generate").addEventListener("click", generateWebsite);
+  $("applyPromptChanges").addEventListener("click", editWebsite);
+  $("saveProject").addEventListener("click", () => saveProject());
+  $("exportProject").addEventListener("click", downloadHTML);
+  $("downloadPublish").addEventListener("click", downloadZIP);
+  $("previewWebsite").addEventListener("click", openPreview);
+  $("newProject").addEventListener("click", newProject);
 
   $("desktopView").addEventListener("click", () => {
     mode = "desktop";
@@ -756,45 +759,23 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   });
 
-  $("newProject").addEventListener("click", () => {
-    if (!confirm("Start a new project? Saved projects will remain.")) {
-      return;
-    }
-
-    html = "";
-    project = null;
-    history = [];
-
-    fieldIds.forEach(id => {
-      if (fields[id]) {
-        fields[id].value =
-          fields[id].type === "color" ? "#3978ff" : "";
-      }
-    });
-
-    document.querySelectorAll('[name="sections"]')
-      .forEach(box => box.checked = true);
-
-    render();
-    renderHistory();
-
-    setText("status", "New project ready.");
-    setText("editStatus", "Generate or load a website first.");
-    setText("publishStatus", "Create a website before publishing.");
-  });
-
   // INITIALIZE
 
   renderProjects();
   render();
   renderHistory();
 
+  $("geminiApiKey").value = "";
+
   updateConnection(
     getApiKey()
-      ? "Gemini key is saved on this device."
-      : "AI is not connected."
+      ? "Gemini key is already saved on this device."
+      : "Connect Gemini to start building."
   );
 
-  $("geminiApiKey").value = "";
+  setText(
+    "publishStatus",
+    "Public publishing backend is not connected yet."
+  );
 });
-                         
+    
