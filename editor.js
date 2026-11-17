@@ -1,63 +1,68 @@
 
-window.STONIC_EDITOR = {
-  applyTemplate: function (templateId) {
-    const templates = window.STONIC_TEMPLATES || [];
-    const template = templates.find(item => item.id === templateId);
+(function () {
+  "use strict";
 
-    if (!template) {
+  const STONICEditor = {
+    validateHTML(html) {
+      if (typeof html !== "string" || !html.trim()) {
+        return {
+          valid: false,
+          message: "Website HTML is empty."
+        };
+      }
+
+      if (
+        !/<html[\s>]/i.test(html) ||
+        !/<\/html>/i.test(html) ||
+        !/<body[\s>]/i.test(html) ||
+        !/<\/body>/i.test(html)
+      ) {
+        return {
+          valid: false,
+          message: "A complete HTML document is required."
+        };
+      }
+
+      if (html.length > 500000) {
+        return {
+          valid: false,
+          message: "Website is too large."
+        };
+      }
+
       return {
-        success: false,
-        message: "Template not found."
+        valid: true,
+        message: "HTML document is valid."
       };
-    }
+    },
 
-    return {
-      success: true,
-      html: template.html,
-      css: template.css,
-      name: template.name
-    };
-  },
+    createBackup(html) {
+      return {
+        html: html,
+        createdAt: new Date().toISOString()
+      };
+    },
 
-  updateText: function (html, oldText, newText) {
-    if (!oldText || typeof html !== "string") {
-      return html;
-    }
-
-    return html.replace(oldText, newText);
-  },
-
-  updateColor: function (css, oldColor, newColor) {
-    if (!oldColor || typeof css !== "string") {
-      return css;
-    }
-
-    return css.replaceAll(oldColor, newColor);
-  },
-
-  validateWebsite: function (html) {
-    const issues = [];
-
-    if (!html || typeof html !== "string") {
-      issues.push("Website HTML is empty.");
-    } else {
-      if (!html.includes("<title>")) {
-        issues.push("Page title is missing.");
+    restoreBackup(backup) {
+      if (!backup || typeof backup.html !== "string") {
+        throw new Error("Invalid website backup.");
       }
 
-      if (!html.includes("<meta name=\"viewport\"")) {
-        issues.push("Mobile viewport meta tag is missing.");
+      return backup.html;
+    },
+
+    createDocument(html) {
+      const result = this.validateHTML(html);
+
+      if (!result.valid) {
+        throw new Error(result.message);
       }
 
-      if (!html.includes("<body")) {
-        issues.push("Body element is missing.");
-      }
+      return new Blob([html], {
+        type: "text/html;charset=utf-8"
+      });
     }
+  };
 
-    return {
-      valid: issues.length === 0,
-      issues: issues
-    };
-  }
-};
-      
+  window.STONICEditor = STONICEditor;
+})();
