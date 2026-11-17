@@ -1,14 +1,25 @@
 
 {
   "id": "./",
-  "name": "STONIC Website Studio",
+  "name": "STONIC Website Builder",
   "short_name": "STONIC",
-  "description": "STONIC AI Website Builder",
+  "description": "AI-powered website builder",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0b1020",
-  "theme_color": "#0b1020",
-  "categories": ["productivity", "business"]
+  "background_color": "#f4f7fc",
+  "theme_color": "#101b32",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
